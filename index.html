@@ -800,6 +800,10 @@
                 <span>Show legend bar</span>
               </label>
               <div class="legendMenuRow">
+                <span>Legend size</span>
+                <input type="range" id="legendSizeSlider" min="0.3" max="1.5" step="0.05" value="1">
+              </div>
+              <div class="legendMenuRow">
                 <span>Bar height</span>
                 <input type="range" id="legendHeightSlider" min="0.5" max="1.8" step="0.1" value="0.7">
               </div>
@@ -2036,6 +2040,7 @@ document.addEventListener("keydown", e=>{
 // (S) since changing it never needs a full regenerate, just a fast redraw.
 let legendPos = "bottom-left";
 let legendHeightMult = 0.7;
+let legendSizeMult = 1;   // scales the whole legend (bar width/height, labels, ticks) -- smaller, not shorter
 let legendShowCaps = true;
 let legendShowBar = true;
 // Continuous 0-100 vertical placement along whichever side (left/right) the
@@ -2046,6 +2051,7 @@ let legendShowBar = true;
 // of the canvas.
 let legendVOffset = 100;
 const legendPosBtn = $("legendPosBtn"), legendPosMenu = $("legendPosMenu");
+const legendSizeSlider = $("legendSizeSlider");
 const legendHeightSlider = $("legendHeightSlider"), legendCapsToggle = $("legendCapsToggle");
 const legendBarToggle = $("legendBarToggle"), legendVSlider = $("legendVSlider");
 const legendMenuHeat = $("legendMenuHeat"), legendMenuClosest = $("legendMenuClosest");
@@ -2056,6 +2062,10 @@ const closestLegendMapToggle = $("closestLegendMapToggle");
 let closestLegendOnMap = false;
 if(closestLegendMapToggle) closestLegendMapToggle.addEventListener("change", ()=>{
   closestLegendOnMap = closestLegendMapToggle.checked;
+  if(state.hasResult) requestRender(false);
+});
+if(legendSizeSlider) legendSizeSlider.addEventListener("input", ()=>{
+  legendSizeMult = parseFloat(legendSizeSlider.value) || 1;
   if(state.hasResult) requestRender(false);
 });
 if(legendHeightSlider) legendHeightSlider.addEventListener("input", ()=>{
@@ -2076,6 +2086,7 @@ if(legendBarToggle) legendBarToggle.addEventListener("change", ()=>{
   if(legendHeightSlider) legendHeightSlider.disabled = !legendShowBar;
   if(legendCapsToggle) legendCapsToggle.disabled = !legendShowBar;
   if(legendVSlider) legendVSlider.disabled = !legendShowBar;
+  if(legendSizeSlider) legendSizeSlider.disabled = !legendShowBar;
   if(state.hasResult) requestRender(false);
 });
 function setLegendPos(pos){
@@ -4022,7 +4033,8 @@ function drawGridDividers(g,x0,y0,x1,y1,scale,ox,oy,m){
 // the two can never drift apart the way they once did when the bar's
 // position was hard-coded separately in each place.
 function legendGeometry(W,H,m){
-  const barW=22*m, barH=Math.min(H*0.32,300*m)*legendHeightMult;
+  const ms=m*legendSizeMult;
+  const barW=22*ms, barH=Math.min(H*0.32,300*m)*legendHeightMult*legendSizeMult;
   const margin=22*m;
   const side = legendPos.endsWith("-right") ? "right" : "left";
   const barX = side==="left" ? margin : W-margin-barW;
@@ -4047,13 +4059,14 @@ function legendGeometry(W,H,m){
 // population name is drawn underneath it and then buried.
 function overlayRects(g,W,H,m){
   const {barW,barH,barX,barY,side}=legendGeometry(W,H,m);
-  const lblS=15*m;
+  const lblS=15*m*legendSizeMult;
   const rects=[];
 
   // The reserved box always spans from the bar out toward the side its
   // tick/value labels grow into, whichever edge the bar itself is on.
-  const boxX = side==="left" ? 8*m : Math.max(8*m, barX-90*m);
-  const boxW = side==="left" ? (barX+barW+90*m-boxX) : (barX+barW+8*m-boxX);
+  const reach=90*m*legendSizeMult;
+  const boxX = side==="left" ? 8*m : Math.max(8*m, barX-reach);
+  const boxW = side==="left" ? (barX+barW+reach-boxX) : (barX+barW+8*m-boxX);
   if(legendShowBar) rects.unshift({x:boxX, y:barY-lblS*2.6, w:boxW, h:barH+lblS*5.2});
 
   if(S.mode==="closest" && closestLegendOnMap && state.targetSamples && state.targetSamples.length>=2){
@@ -4247,7 +4260,8 @@ function drawTitleAndLegend(g,W,H,m){
   g.textBaseline="middle";
 
   const {barW,barH,barX,barY,side,tickSide}=legendGeometry(W,H,m);
-  const lblS=15*m, valS=13.5*m;
+  const ms=m*legendSizeMult;
+  const lblS=15*ms, valS=13.5*ms;
 
   if(legendShowBar){
   // Contour mode quantizes the map itself into 18 flat colour steps instead
@@ -4266,14 +4280,14 @@ function drawTitleAndLegend(g,W,H,m){
     g.fillRect(barX,barY+i,barW,1.5);
   }
   g.strokeStyle="rgba(30,36,50,0.5)";
-  g.lineWidth=1*m;
+  g.lineWidth=1*ms;
   g.strokeRect(barX,barY,barW,barH);
 
   g.lineJoin="round";
   function label(text,x,y,size,weight,align){
     g.font=`${weight} ${size}px "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif`;
     g.textAlign=align||"left";
-    g.lineWidth=3.5*m;
+    g.lineWidth=3.5*ms;
     g.strokeStyle="rgba(255,255,255,0.95)";
     g.strokeText(text,x,y);
     g.fillStyle="#1b2233";
@@ -4301,9 +4315,9 @@ function drawTitleAndLegend(g,W,H,m){
     if(t<-1e-6||t>1+1e-6) continue;
     const y=barY+t*barH;
     g.strokeStyle="rgba(30,36,50,0.65)";
-    g.lineWidth=1*m;
-    g.beginPath(); g.moveTo(tickX,y); g.lineTo(tickX+4*m*tickDir,y); g.stroke();
-    label(v.toFixed(decimals), tickX+7*m*tickDir, y, valS, 600, tickAlign);
+    g.lineWidth=1*ms;
+    g.beginPath(); g.moveTo(tickX,y); g.lineTo(tickX+4*ms*tickDir,y); g.stroke();
+    label(v.toFixed(decimals), tickX+7*ms*tickDir, y, valS, 600, tickAlign);
   }
   } // legendShowBar
   g.textAlign="left";
