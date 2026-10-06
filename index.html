@@ -1832,7 +1832,13 @@ const WORLD_ERR={
   payment_not_completed:"PayPal did not confirm the payment. You were not charged for an unfinished order; contact @racenjoyer if you were.",
   capture_failed:"PayPal could not complete the payment. Please try again.",
 };
-function worldStatus(msg, cls){ const s=$("worldStatus"); s.textContent=msg||""; s.className=cls||""; }
+function worldStatus(msg, cls){
+  const s=$("worldStatus"); s.textContent=""; s.className=cls||"";
+  String(msg||"").split(/(@racenjoyer)/).forEach(p=>{
+    if(p==="@racenjoyer"){ const l=document.createElement("a"); l.href="https://x.com/racenjoyer"; l.target="_blank"; l.rel="noopener noreferrer"; l.textContent=p; l.style.cssText="color:inherit;text-decoration:underline;font-weight:700"; s.appendChild(l); }
+    else if(p) s.appendChild(document.createTextNode(p));
+  });
+}
 function worldShow(mode){ // "buy" | "manage"
   $("worldBuy").style.display = mode==="buy" ? "" : "none";
   $("worldHaveCode").style.display = mode==="buy" ? "" : "none";
