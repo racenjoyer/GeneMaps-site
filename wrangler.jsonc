@@ -1,0 +1,9 @@
+{
+  "name": "genemaps",
+  "compatibility_date": "2025-01-01",
+  "assets": { "directory": "./public" },
+  "routes": [
+    { "pattern": "genemaps.net", "custom_domain": true },
+    { "pattern": "www.genemaps.net", "custom_domain": true }
+  ]
+}
