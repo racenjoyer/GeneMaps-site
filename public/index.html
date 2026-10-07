@@ -4054,7 +4054,7 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
   g.clip();
 
   if(state.hasResult && state.points.length){
-    let heat=null, hx0, hy0, hw, hh, bandField=null;
+    let heat=null, hx0, hy0, hw, hh, bandField=null, worldFine=null;
     {
       // Grid sized to the CURRENT exact viewport every time — the only way to
       // guarantee the raster always covers the whole visible area regardless
@@ -4068,9 +4068,11 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
       // every boundary -- letting it go down to 1px is what actually gets the
       // "more polygon sides, rounder edge" improvement; continuous mode is
       // unaffected.
-      const stepFloor = (S.mode==="closest") ? 1 : 2;
+      const worldSharp = !fast && state.region.id==="world";
+      const stepFloor = (S.mode==="closest") ? 1 : (worldSharp ? 3 : 2);
       const step0=pickStep(W,H,state.points.length,budget,stepFloor);
-      const cl=clusterPoints(x0,y0,x1,y1,Math.max((x1-x0)/(W/step0),(y1-y0)/(H/step0)));
+      const clStep = worldSharp ? 1 : step0;  // World settled: merge samples at 1px, not at the grid step, so close samples stay distinct
+      const cl=clusterPoints(x0,y0,x1,y1,Math.max((x1-x0)/(W/clStep),(y1-y0)/(H/clStep)));
       const step=Math.max(Math.min(minStep,stepFloor), Math.min(step0, pickStep(W,H,cl.n,budget,stepFloor)));
 
       const gw=Math.max(2,Math.ceil(W/step)+1), gh=Math.max(2,Math.ceil(H/step)+1);
@@ -4140,8 +4142,75 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
         if(S.band){
           bandField={field,mask:msk1,gw,gh};
         } else {
-          for(let i=0;i<field.length;i++){
-            let t=(field[i]-state.minDist)/range;
+          let fld=field;
+          if(worldSharp){
+            // World only, settled pass. The coarse (2px) field above is cheap but cannot resolve the
+            // 1-2px rims around each blob, so: lerp it up to a 1px grid, then recompute the real IDW
+            // field at 1px ONLY near edges (where the coarse field changes quickly), and unsharp-mask
+            // the result. Flat interiors keep the cheap value; edges get full 1px detail. Overshoot is
+            // clamped to the legend range, so flat areas keep their exact colour.
+            const gw1=Math.max(2,Math.ceil(W)+1), gh1=Math.max(2,Math.ceil(H)+1);
+            const dx1=(x1-x0)/(gw1-1), dy1=(y1-y0)/(gh1-1);
+            const lo=state.minDist, hi=state.maxDist, amt=2.2;
+            const f1=new Float32Array(gw1*gh1);
+            const kx=(gw-1)/(gw1-1), ky=(gh-1)/(gh1-1);
+            const xaT=new Int32Array(gw1), xbT=new Int32Array(gw1), txT=new Float32Array(gw1);
+            for(let x=0;x<gw1;x++){ const fx=x*kx, xa=Math.floor(fx); xaT[x]=xa; xbT[x]=Math.min(gw-1,xa+1); txT[x]=fx-xa; }
+            for(let y=0;y<gh1;y++){
+              const fy=y*ky, ya=Math.floor(fy), yb=Math.min(gh-1,ya+1), ty=fy-ya, ra=ya*gw, rb=yb*gw, o=y*gw1;
+              for(let x=0;x<gw1;x++){
+                const xa=xaT[x], xb=xbT[x], tx=txT[x];
+                f1[o+x]=((field[ra+xa]*(1-tx)+field[ra+xb]*tx)*(1-ty)+(field[rb+xa]*(1-tx)+field[rb+xb]*tx)*ty);
+              }
+            }
+            // coarse cells whose 3x3 neighbourhood spans more than ~1.5% of the range, dilated by one cell
+            const thr=range*0.04, edgeC=new Uint8Array(gw*gh);
+            for(let y=0;y<gh;y++) for(let x=0;x<gw;x++){
+              let mn=1e30,mx=-1e30;
+              for(let yy=Math.max(0,y-1);yy<=Math.min(gh-1,y+1);yy++) for(let xx=Math.max(0,x-1);xx<=Math.min(gw-1,x+1);xx++){ let v=field[yy*gw+xx]; v=v<lo?lo:(v>hi?hi:v); if(v<mn)mn=v; if(v>mx)mx=v; }
+              if(mx-mn>thr) edgeC[y*gw+x]=1;
+            }
+            const edgeD=new Uint8Array(gw*gh);
+            for(let y=0;y<gh;y++) for(let x=0;x<gw;x++){
+              if(!edgeC[y*gw+x]) continue;
+              for(let yy=Math.max(0,y-1);yy<=Math.min(gh-1,y+1);yy++) for(let xx=Math.max(0,x-1);xx<=Math.min(gw-1,x+1);xx++) edgeD[yy*gw+xx]=1;
+            }
+            const emask=new Uint8Array(gw1*gh1);
+            const xrT=new Int32Array(gw1); for(let x=0;x<gw1;x++) xrT[x]=Math.min(gw-1,Math.round(x*kx));
+            let any=false;
+            for(let y=0;y<gh1;y++){
+              const ro=Math.min(gh-1,Math.round(y*ky))*gw, o=y*gw1;
+              for(let x=0;x<gw1;x++){
+                const ci=ro+xrT[x];
+                if(msk1[ci] && edgeD[ci]){ emask[o+x]=1; any=true; }
+              }
+            }
+            if(any){
+              const fine=cl.lm ? buildFieldWorld(cl,gw1,gh1,x0,y0,dx1,dy1,emask,false) : buildField(cl,gw1,gh1,x0,y0,dx1,dy1,emask);
+              for(let k=0;k<f1.length;k++) if(emask[k]) f1[k]=fine[k];
+            }
+            const out=new Float32Array(gw1*gh1);
+            for(let y=0;y<gh1;y++){
+              const ya=y>0?y-1:0, yb=y<gh1-1?y+1:y;
+              for(let x=0;x<gw1;x++){
+                const xa=x>0?x-1:0, xb=x<gw1-1?x+1:x;
+                const sm=(f1[ya*gw1+xa]+f1[ya*gw1+x]+f1[ya*gw1+xb]+f1[y*gw1+xa]+f1[y*gw1+x]+f1[y*gw1+xb]+f1[yb*gw1+xa]+f1[yb*gw1+x]+f1[yb*gw1+xb])/9;
+                const v=f1[y*gw1+x], r=v+amt*(v-sm);
+                out[y*gw1+x]= r<lo?lo:(r>hi?hi:r);
+              }
+            }
+            const small2=document.createElement("canvas"); small2.width=gw1; small2.height=gh1;
+            const sctx2=small2.getContext("2d"), img2=sctx2.createImageData(gw1,gh1), d2=img2.data;
+            for(let k=0;k<out.length;k++){
+              let t=(out[k]-lo)/range; t=t<0?0:(t>1?1:t);
+              const idx=(t*255)|0;
+              d2[k*4]=RAMP[idx*3]; d2[k*4+1]=RAMP[idx*3+1]; d2[k*4+2]=RAMP[idx*3+2]; d2[k*4+3]=255;
+            }
+            sctx2.putImageData(img2,0,0);
+            worldFine={canvas:small2,gw2:gw1,gh2:gh1,fx:W/(gw1-1),fy:H/(gh1-1)};
+          }
+          for(let i=0;i<fld.length;i++){
+            let t=(fld[i]-state.minDist)/range;
             t=t<0?0:(t>1?1:t);
             const idx=(t*255)|0;
             data[i*4]=RAMP[idx*3]; data[i*4+1]=RAMP[idx*3+1]; data[i*4+2]=RAMP[idx*3+2]; data[i*4+3]=255;
@@ -4151,6 +4220,7 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
       sctx.putImageData(img,0,0);
       heat=small;
       hx0=-step/2; hy0=-step/2; hw=gw*step; hh=gh*step;
+      if(worldFine){ heat=worldFine.canvas; hx0=-worldFine.fx/2; hy0=-worldFine.fy/2; hw=worldFine.gw2*worldFine.fx; hh=worldFine.gh2*worldFine.fy; }
       if(bandField){ heat=renderBandImage(bandField.field,gw,gh,W,H,g,fast); hx0=0; hy0=0; hw=W; hh=H; }
     }
 
