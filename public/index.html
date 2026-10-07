@@ -350,18 +350,25 @@
   /* Round label-size button, same look as the eye toggle docked under it
      on the map. Cycles the "Label & dot size" setting. */
   #zoomCtrls{align-items:center;}
-  #zoomCtrls #sizeBtn{width:36px;height:36px;padding:0;border-radius:999px;margin-left:6px;
+  #sizeBtn,#legendPosBtn,#bandBtn{width:36px;height:36px;padding:0;border-radius:999px;margin-left:6px;
     background:rgba(11,17,28,.85);color:var(--text);font-weight:700;font-size:13px;letter-spacing:-.02em;
     display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;}
-  #zoomCtrls #sizeBtn:hover{border-color:var(--accent2);color:var(--accent2);}
+  #sizeBtn:hover,#legendPosBtn:hover,#bandBtn:hover{border-color:var(--accent2);color:var(--accent2);}
+  #sizeBtn,#legendPosBtn,#bandBtn{margin-left:0;border:1px solid var(--border);}
+  #bandBtn svg{width:23px;height:23px;flex:0 0 auto;}
+  #bandBtn[aria-pressed="true"]{border-color:var(--accent2);color:var(--accent2);background:rgba(59,167,220,.16);}
+  #legendPosBtn svg{width:19px;height:19px;flex:0 0 auto;}
   #mapBar{position:relative;flex:0 0 auto;display:flex;justify-content:center;align-items:center;
     gap:10px;padding:9px 14px;border-top:1px solid var(--border);background:#0b111c;}
   #mapBarRight{position:absolute;right:14px;top:50%;transform:translateY(-50%);
     display:flex;align-items:center;gap:8px;}
   #mapBarLeft{position:absolute;left:14px;top:50%;transform:translateY(-50%);
     display:flex;gap:8px;}
+  #mapDisclaimer{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto;}
+  @media (min-width:821px){ #mapBarLeft{max-width:calc(50% - 190px);align-items:center;} }
+  @media (min-width:821px) and (max-width:1150px){ #mapDisclaimer{display:none;} }
   #legendPosWrap{position:relative;}
-  #legendPosMenu{display:none;position:absolute;left:0;bottom:calc(100% + 8px);
+  #legendPosMenu{display:none;position:absolute;left:0;bottom:calc(100% + 8px);max-height:60vh;overflow-y:auto;
     background:var(--panel);border:1px solid var(--border);border-radius:10px;
     padding:6px;min-width:190px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:20;}
   #legendPosMenu.on{display:flex;flex-direction:column;gap:2px;}
@@ -677,12 +684,14 @@
 
     <fieldset>
       <legend>3. Heat</legend>
-      <label class="small">Locality — how tightly heat hugs each population</label>
-      <select id="powerSelect">
-        <option value="2">Broad</option>
-        <option value="3">Balanced</option>
-        <option value="6" selected>Tight</option>
-      </select>
+      <!-- Locality picker removed from the UI (Tight is the one setting used); kept hidden so the code that reads it still works. -->
+      <div style="display:none">
+        <select id="powerSelect">
+          <option value="2">Broad</option>
+          <option value="3">Balanced</option>
+          <option value="6" selected>Tight</option>
+        </select>
+      </div>
       <label class="small">Smoothing — evens out dense clusters of samples</label>
       <select id="smoothSelect">
         <option value="0.12" selected>Minimal</option>
@@ -692,7 +701,7 @@
       </select>
       <label class="small">Coverage radius (°)</label>
       <input type="number" id="reachDeg" value="3" step="0.5" min="0.5">
-      <div class="checkrow"><input type="checkbox" id="bandMode"><label for="bandMode">Contour bands</label></div>
+      <div class="checkrow" style="display:none"><input type="checkbox" id="bandMode"><label for="bandMode">Contour bands</label></div>
     </fieldset>
 
     <fieldset>
@@ -705,6 +714,7 @@
       <div class="checkrow"><input type="checkbox" id="excludeDiaspora" checked><label for="excludeDiaspora">Exclude diaspora populations</label></div>
       <label class="small">Label &amp; dot size</label>
       <select id="sizeSelect">
+        <option value="0.36">Mini</option>
         <option value="0.55">Tiny</option>
         <option value="0.69">Extra small</option>
         <option value="0.81">Small</option>
@@ -765,7 +775,6 @@
       <div id="zoomCtrls">
         <button id="zoomOutBtn">−</button>
         <button id="zoomInBtn">+</button>
-        <button id="sizeBtn" type="button" aria-label="Label size: Normal (click to change)" title="Label size: Normal (click to change)">Aa</button>
       </div>
     </div>
     <div id="canvasWrap">
@@ -785,7 +794,7 @@
     <div id="mapBar">
       <div id="mapBarLeft">
         <div id="legendPosWrap">
-          <button id="legendPosBtn" class="pillBtn" type="button" aria-haspopup="true" aria-expanded="false">Legend ▾</button>
+          <button id="legendPosBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Legend options" title="Legend options"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="6" height="18" rx="1.5"/><path d="M13 6h7M13 12h5M13 18h7"/></svg></button>
           <div id="legendPosMenu" role="menu">
             <button type="button" data-pos="bottom-left">Bottom Left</button>
             <button type="button" data-pos="center-left">Center Left</button>
@@ -801,7 +810,7 @@
               </label>
               <div class="legendMenuRow">
                 <span>Legend size</span>
-                <input type="range" id="legendSizeSlider" min="0.3" max="1.5" step="0.05" value="1">
+                <input type="range" id="legendSizeSlider" min="0.3" max="1.5" step="0.05" value="0.8">
               </div>
               <div class="legendMenuRow">
                 <span>Bar height</span>
@@ -815,6 +824,10 @@
                 <input type="checkbox" id="legendCapsToggle" checked>
                 <span>Show "Closer"/"Farther" labels</span>
               </label>
+              <label class="legendMenuRow legendMenuCheck">
+                <input type="checkbox" id="legendAllTicksToggle">
+                <span>Show all scale numbers (0.05, 0.10, 0.15&hellip;)</span>
+              </label>
             </div>
             <div id="legendMenuClosest" style="display:none;">
               <label class="legendMenuRow legendMenuCheck">
@@ -824,6 +837,8 @@
             </div>
           </div>
         </div>
+        <button id="sizeBtn" type="button" aria-label="Label size: Normal (click to change)" title="Label size: Normal (click to change)">Aa</button>
+        <button id="bandBtn" type="button" aria-pressed="false" aria-label="Contour bands: off (click to turn on)" title="Contour bands: off (click to turn on)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5C4 7.5 8 4.5 12.5 5C17.5 5.5 20.5 8.5 19.5 13C18.5 17.5 14.5 19.8 10.5 19C6.5 18.2 4.8 15.2 4.5 11.5Z"/><path d="M7 11.5C6.8 9.5 9 7.8 12 8.2C15 8.5 16.8 10.5 16.2 13C15.6 15.5 13.2 16.8 10.8 16.4C8.6 16 7.2 13.8 7 11.5Z"/><path d="M9.6 11.6C9.6 10.5 10.8 9.9 12.2 10.3C13.6 10.7 14.2 11.8 13.7 12.9C13.2 13.9 11.8 14.3 10.8 13.8C9.9 13.4 9.6 12.5 9.6 11.6Z"/><path d="M11.4 11.8C11.5 11.3 12.2 11.2 12.4 11.7C12.6 12.2 12.1 12.6 11.7 12.5C11.4 12.4 11.3 12.1 11.4 11.8Z"/></svg></button>
         <button id="mapDisclaimer" type="button">May contain errors — report</button>
       </div>
       <button id="downloadBtn" class="dl"><svg class="dlIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v11.19l3.72-3.72a.75.75 0 1 1 1.06 1.06l-5 5a.75.75 0 0 1-1.06 0l-5-5a.75.75 0 1 1 1.06-1.06l3.72 3.72V3a.75.75 0 0 1 .75-.75Zm-9 15a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V18a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V18a.75.75 0 0 1 .75-.75Z"/></svg>Download PNG</button>
@@ -2040,8 +2055,9 @@ document.addEventListener("keydown", e=>{
 // (S) since changing it never needs a full regenerate, just a fast redraw.
 let legendPos = "bottom-left";
 let legendHeightMult = 0.7;
-let legendSizeMult = 1;   // scales the whole legend (bar width/height, labels, ticks) -- smaller, not shorter
+let legendSizeMult = 0.8;   // scales the whole legend (bar width/height, labels, ticks) -- smaller, not shorter
 let legendShowCaps = true;
+let legendAllTicks = false;   // false: only the two end values; true: evenly spaced numbers (0.05, 0.10, ...)
 let legendShowBar = true;
 // Continuous 0-100 vertical placement along whichever side (left/right) the
 // preset buttons pinned the bar to -- 0 hugs the top margin, 100 hugs the
@@ -2054,6 +2070,7 @@ const legendPosBtn = $("legendPosBtn"), legendPosMenu = $("legendPosMenu");
 const legendSizeSlider = $("legendSizeSlider");
 const legendHeightSlider = $("legendHeightSlider"), legendCapsToggle = $("legendCapsToggle");
 const legendBarToggle = $("legendBarToggle"), legendVSlider = $("legendVSlider");
+const legendAllTicksToggle = $("legendAllTicksToggle");
 const legendMenuHeat = $("legendMenuHeat"), legendMenuClosest = $("legendMenuClosest");
 const closestLegendMapToggle = $("closestLegendMapToggle");
 // Off by default -- the sidebar's own target/colour list (renderClosestLegend)
@@ -2077,6 +2094,10 @@ if(legendVSlider) legendVSlider.addEventListener("input", ()=>{
   if(Number.isNaN(legendVOffset)) legendVOffset=100;
   if(state.hasResult) requestRender(false);
 });
+if(legendAllTicksToggle) legendAllTicksToggle.addEventListener("change", ()=>{
+  legendAllTicks = legendAllTicksToggle.checked;
+  if(state.hasResult) requestRender(false);
+});
 if(legendCapsToggle) legendCapsToggle.addEventListener("change", ()=>{
   legendShowCaps = legendCapsToggle.checked;
   if(state.hasResult) requestRender(false);
@@ -2085,6 +2106,7 @@ if(legendBarToggle) legendBarToggle.addEventListener("change", ()=>{
   legendShowBar = legendBarToggle.checked;
   if(legendHeightSlider) legendHeightSlider.disabled = !legendShowBar;
   if(legendCapsToggle) legendCapsToggle.disabled = !legendShowBar;
+  if(legendAllTicksToggle) legendAllTicksToggle.disabled = !legendShowBar;
   if(legendVSlider) legendVSlider.disabled = !legendShowBar;
   if(legendSizeSlider) legendSizeSlider.disabled = !legendShowBar;
   if(state.hasResult) requestRender(false);
@@ -3714,7 +3736,7 @@ function render(fast){
   // used while actively dragging/zooming, which made panning/zooming with
   // Contour bands on noticeably laggy for no benefit (that pass gets thrown
   // away and redrawn the instant the gesture ends anyway).
-  const bandMult = (S.band && !fast) ? 3 : 1;
+  const bandMult = 1;   // bands are now rendered per pixel from the interpolated field, so no extra grid budget is needed
   // Closest-match mode's flat target colours (blended into each other only
   // right at a boundary -- see drawScene) show every grid cell as a visible
   // block far more readily than a smooth gradient does, so it needs a
@@ -3781,6 +3803,198 @@ function landMask(land,W,H,gw,gh){
 // (spacing = sqrt(area/n), reach = 2.2*spacing, cap 13), so zooming on a region gives that
 // region's own sharpness. The planet-wide boost fades out over a 16x zoom. Quantised so
 // panning does not shimmer. 
+/* ======================= contour bands: smooth bands + labelled isolines ======================= */
+// Colour bands are quantised PER OUTPUT PIXEL from a bilinearly-interpolated field (not from the coarse
+// grid cells themselves), so the band edges are smooth at any grid resolution -- including the coarse
+// grid used while panning/zooming, which used to show up as big square blocks.
+const BAND_COUNT = 18;
+function renderBandImage(field,gw,gh,W,H,g,fast){
+  const k=Math.max(1,(g.getTransform&&g.getTransform().a)||1);
+  let pw=Math.round(W*k), ph=Math.round(H*k);
+  const cap = fast ? 1.0e6 : 16e6;
+  if(pw*ph>cap){ const f=Math.sqrt(cap/(pw*ph)); pw=Math.max(2,Math.round(pw*f)); ph=Math.max(2,Math.round(ph*f)); }
+  const c=document.createElement("canvas"); c.width=pw; c.height=ph;
+  const cg=c.getContext("2d");
+  const img=cg.createImageData(pw,ph);
+  const px=new Uint32Array(img.data.buffer);
+  const lut=new Uint32Array(BAND_COUNT+1);
+  for(let q=0;q<=BAND_COUNT;q++){
+    const idx=((q/BAND_COUNT)*255)|0;
+    lut[q]=(255<<24)|(RAMP[idx*3+2]<<16)|(RAMP[idx*3+1]<<8)|RAMP[idx*3];
+  }
+  const lo=state.minDist, inv=1/((state.maxDist-state.minDist)||1e-9);
+  const ixs=new Int32Array(pw), fxs=new Float32Array(pw);
+  for(let x=0;x<pw;x++){
+    let gx=(x+0.5)*(gw-1)/pw; let ix=Math.floor(gx); if(ix>gw-2) ix=gw-2; if(ix<0) ix=0;
+    ixs[x]=ix; fxs[x]=gx-ix;
+  }
+  for(let y=0;y<ph;y++){
+    let gy=(y+0.5)*(gh-1)/ph; let iy=Math.floor(gy); if(iy>gh-2) iy=gh-2; if(iy<0) iy=0;
+    const fy=gy-iy, r0=iy*gw, r1=r0+gw;
+    for(let x=0;x<pw;x++){
+      const ix=ixs[x], fx=fxs[x];
+      const a=field[r0+ix], b=field[r0+ix+1], cc=field[r1+ix], d=field[r1+ix+1];
+      const v=(a+(b-a)*fx)*(1-fy)+(cc+(d-cc)*fx)*fy;
+      let t=(v-lo)*inv; t=t<0?0:(t>1?1:t);
+      px[y*pw+x]=lut[Math.round(t*BAND_COUNT)];
+    }
+  }
+  cg.putImageData(img,0,0);
+  return c;
+}
+
+// Marching squares on the field grid. Returns polylines (arrays of [gx,gy] in grid units) for one level.
+// Cells touching any masked-out (off-land) corner are skipped so no stray lines show up in the sea.
+function contourChains(field,mask,gw,gh,L){
+  const adj=new Map();
+  const link=(p,q)=>{ (adj.get(p)||adj.set(p,[]).get(p)).push(q); (adj.get(q)||adj.set(q,[]).get(q)).push(p); };
+  for(let j=0;j<gh-1;j++){
+    for(let i=0;i<gw-1;i++){
+      const ia=j*gw+i, ib=ia+1, id=ia+gw, ic=id+1;
+      if(!(mask[ia]&&mask[ib]&&mask[ic]&&mask[id])) continue;
+      const va=field[ia], vb=field[ib], vc=field[ic], vd=field[id];
+      const code=(va>=L?1:0)|(vb>=L?2:0)|(vc>=L?4:0)|(vd>=L?8:0);
+      if(code===0||code===15) continue;
+      const T=ia*2, Rr=ib*2+1, B=id*2, Lf=ia*2+1;
+      switch(code){
+        case 1: case 14: link(Lf,T); break;
+        case 2: case 13: link(T,Rr); break;
+        case 3: case 12: link(Lf,Rr); break;
+        case 4: case 11: link(Rr,B); break;
+        case 6: case 9: link(T,B); break;
+        case 7: case 8: link(Lf,B); break;
+        case 5: case 10: {
+          const centre=(va+vb+vc+vd)/4>=L;
+          if((code===5)===centre){ link(T,Rr); link(Lf,B); } else { link(Lf,T); link(Rr,B); }
+          break;
+        }
+      }
+    }
+  }
+  const pt=(e)=>{
+    const idx=e>>1;
+    if(e&1){ const a=field[idx], b=field[idx+gw]; const t=(L-a)/((b-a)||1e-12); return [idx%gw, Math.floor(idx/gw)+t]; }
+    const a=field[idx], b=field[idx+1]; const t=(L-a)/((b-a)||1e-12); return [idx%gw+t, Math.floor(idx/gw)];
+  };
+  const seen=new Set(), chains=[];
+  const walk=(start)=>{
+    const ids=[start]; seen.add(start);
+    let prev=-1, cur=start;
+    for(;;){
+      const nb=adj.get(cur); let next=-1;
+      for(const n of nb){ if(n!==prev && !seen.has(n)){ next=n; break; } }
+      if(next<0){
+        // closed loop? close it when the start is adjacent to the current end
+        if(ids.length>2 && adj.get(start).includes(cur)) ids.push(start);
+        break;
+      }
+      ids.push(next); seen.add(next); prev=cur; cur=next;
+    }
+    return ids;
+  };
+  for(const [e,nb] of adj){ if(nb.length===1 && !seen.has(e)) chains.push(walk(e).map(pt)); }
+  for(const [e] of adj){ if(!seen.has(e)) chains.push(walk(e).map(pt)); }
+  return chains;
+}
+function chaikin(pts,iter){
+  let p=pts;
+  for(let n=0;n<iter;n++){
+    if(p.length<3) break;
+    const closed = p[0][0]===p[p.length-1][0] && p[0][1]===p[p.length-1][1];
+    const out=[]; if(!closed) out.push(p[0]);
+    for(let i=0;i<p.length-1;i++){
+      const a=p[i], b=p[i+1];
+      out.push([0.75*a[0]+0.25*b[0],0.75*a[1]+0.25*b[1]],[0.25*a[0]+0.75*b[0],0.25*a[1]+0.75*b[1]]);
+    }
+    if(!closed) out.push(p[p.length-1]); else out.push(out[0]);
+    p=out;
+  }
+  return p;
+}
+function fmtLevel(v,step){
+  let d=0; while(d<5 && Math.abs(step*Math.pow(10,d)-Math.round(step*Math.pow(10,d)))>1e-6) d++;
+  return v.toFixed(d);
+}
+// Thin dark isolines every `step` distance units. Each line is cut where its number sits (the number goes
+// in the middle of the line, the line resumes on the other side). Returns the labels actually placed.
+function drawContourLines(g,bf,W,H,m,land){
+  const {field,mask,gw,gh}=bf;
+  const lo=state.minDist, hi=state.maxDist, range=hi-lo;
+  if(!(range>0)) return [];
+  const step=niceStep(range,10);
+  const sx=W/(gw-1), sy=H/(gh-1);
+  const fs=9.5*m;
+  g.save();
+  g.font=`600 ${fs}px "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif`;
+  const lines=[], placed=[];
+  // isPointInPath takes DEVICE coordinates (the current transform is not applied to the point), so map through it.
+  const tf=g.getTransform();
+  const inLand=(x,y)=>g.isPointInPath(land, tf.a*x+tf.c*y+tf.e, tf.b*x+tf.d*y+tf.f);
+  for(let L=Math.ceil(lo/step-1e-9)*step; L<=hi+1e-9; L+=step){
+    if(L<=lo+1e-12 || L>=hi-1e-12) continue;
+    const text=fmtLevel(L,step), tw=g.measureText(text).width;
+    for(const ch of contourChains(field,mask,gw,gh,L)){
+      if(ch.length<2) continue;
+      const pts=chaikin(ch,2).map(p=>[p[0]*sx,p[1]*sy]);
+      lines.push(pts);
+      const cum=[0];
+      for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+      const total=cum[cum.length-1];
+      if(total<110*m) continue;
+      const nLab=Math.max(1,Math.round(total/(420*m)));
+      for(let q=0;q<nLab;q++){
+        const target=total*(q+0.5)/nLab;
+        let i=1; while(i<cum.length-1 && cum[i]<target) i++;
+        const a=pts[Math.max(0,i-2)], b=pts[Math.min(pts.length-1,i+1)], p0=pts[i];
+        const ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
+        const ca=Math.cos(ang), sa=Math.sin(ang), hw=tw/2+3*m;
+        // keep the label on land and away from other labels
+        if(!(inLand(p0[0],p0[1])&&inLand(p0[0]+ca*hw,p0[1]+sa*hw)&&inLand(p0[0]-ca*hw,p0[1]-sa*hw))) continue;
+        if(placed.some(l=>Math.hypot(l.x-p0[0],l.y-p0[1])<70*m)) continue;
+        placed.push({x:p0[0],y:p0[1],ang,text,hw});
+      }
+    }
+  }
+  // Clip = everything except a small rotated box under each number, so the line is interrupted there.
+  const hh=fs*0.62;
+  g.beginPath(); g.rect(-1e6,-1e6,2e6,2e6);
+  for(const l of placed){
+    const ca=Math.cos(l.ang), sa=Math.sin(l.ang);
+    const c=(u,v)=>[l.x+u*ca-v*sa, l.y+u*sa+v*ca];
+    const [p1,p2,p3,p4]=[c(-l.hw,-hh),c(l.hw,-hh),c(l.hw,hh),c(-l.hw,hh)];
+    g.moveTo(p1[0],p1[1]); g.lineTo(p2[0],p2[1]); g.lineTo(p3[0],p3[1]); g.lineTo(p4[0],p4[1]); g.closePath();
+  }
+  g.clip("evenodd");
+  g.lineJoin="round"; g.lineCap="round";
+  g.strokeStyle="rgba(18,24,38,0.62)";
+  g.lineWidth=Math.max(0.6, 0.9*m);
+  g.beginPath();
+  for(const pts of lines){
+    g.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]);
+  }
+  g.stroke();
+  g.restore();
+  return placed;
+}
+function drawContourLabels(g,labels,m){
+  if(!labels.length) return [];
+  const fs=9.5*m, rects=[];
+  g.save();
+  g.font=`600 ${fs}px "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif`;
+  g.textAlign="center"; g.textBaseline="middle";
+  for(const l of labels){
+    let ang=l.ang; if(ang>Math.PI/2||ang<-Math.PI/2) ang+=Math.PI;
+    rects.push({x:l.x-l.hw,y:l.y-fs*0.8,w:l.hw*2,h:fs*1.6});
+    g.save();
+    g.translate(l.x,l.y); g.rotate(ang);
+    g.fillStyle="rgba(16,22,36,0.95)"; g.fillText(l.text,0,0);
+    g.restore();
+  }
+  g.restore();
+  return rects;
+}
+
 function drawScene(g,W,H,scale,budget,m,minStep,fast){
   if(!(state.region && state.region.id==="world") || reachTouched || !state.fullAreaDeg || !state.points.length)
     return drawSceneInner(g,W,H,scale,budget,m,minStep,fast);
@@ -3840,7 +4054,7 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
   g.clip();
 
   if(state.hasResult && state.points.length){
-    let heat=null, hx0, hy0, hw, hh;
+    let heat=null, hx0, hy0, hw, hh, bandField=null;
     {
       // Grid sized to the CURRENT exact viewport every time — the only way to
       // guarantee the raster always covers the whole visible area regardless
@@ -3854,7 +4068,7 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
       // every boundary -- letting it go down to 1px is what actually gets the
       // "more polygon sides, rounder edge" improvement; continuous mode is
       // unaffected.
-      const stepFloor = (S.band || S.mode==="closest") ? 1 : 2;
+      const stepFloor = (S.mode==="closest") ? 1 : 2;
       const step0=pickStep(W,H,state.points.length,budget,stepFloor);
       const cl=clusterPoints(x0,y0,x1,y1,Math.max((x1-x0)/(W/step0),(y1-y0)/(H/step0)));
       const step=Math.max(Math.min(minStep,stepFloor), Math.min(step0, pickStep(W,H,cl.n,budget,stepFloor)));
@@ -3923,18 +4137,21 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
         const msk1=landMask(land,W,H,gw,gh);
         const field=cl.lm ? buildFieldWorld(cl,gw,gh,x0,y0,dxw,dyw,msk1,false) : buildField(cl,gw,gh,x0,y0,dxw,dyw,msk1);
         const range=(state.maxDist-state.minDist)||1e-9;
-        const bands=S.band?18:0;
-        for(let i=0;i<field.length;i++){
-          let t=(field[i]-state.minDist)/range;
-          t=t<0?0:(t>1?1:t);
-          if(bands) t=Math.round(t*bands)/bands;
-          const idx=(t*255)|0;
-          data[i*4]=RAMP[idx*3]; data[i*4+1]=RAMP[idx*3+1]; data[i*4+2]=RAMP[idx*3+2]; data[i*4+3]=255;
+        if(S.band){
+          bandField={field,mask:msk1,gw,gh};
+        } else {
+          for(let i=0;i<field.length;i++){
+            let t=(field[i]-state.minDist)/range;
+            t=t<0?0:(t>1?1:t);
+            const idx=(t*255)|0;
+            data[i*4]=RAMP[idx*3]; data[i*4+1]=RAMP[idx*3+1]; data[i*4+2]=RAMP[idx*3+2]; data[i*4+3]=255;
+          }
         }
       }
       sctx.putImageData(img,0,0);
       heat=small;
       hx0=-step/2; hy0=-step/2; hw=gw*step; hh=gh*step;
+      if(bandField){ heat=renderBandImage(bandField.field,gw,gh,W,H,g,fast); hx0=0; hy0=0; hw=W; hh=H; }
     }
 
     // Solid land-coloured base fill, laid down before anything else. The
@@ -3971,7 +4188,9 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
       const k=Math.max(1, scale/fit);
       lwMult=Math.min(1, 0.4+0.6*Math.log2(k)/3);
     }
-    g.lineWidth=state.region.id==="world" ? Math.max(0.5*m,1.5*m*lwMult) : Math.max(1.3,1.5*m);
+    // Outline weight scales with m exactly like the label halos and dots do, so the coastline keeps the
+    // same weight relative to the text on a phone, on desktop and in the exported PNG (no fixed minimum).
+    g.lineWidth=state.region.id==="world" ? Math.max(0.5*m,1.5*m*lwMult) : 1.5*m;
     g.lineJoin="round";
     g.stroke(land);
     g.restore();
@@ -3988,17 +4207,21 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
     // it wants the same smooth bilinear stretch continuous mode gets --
     // nearest-neighbour would just turn that soft blend back into visible
     // square steps.
-    g.imageSmoothingEnabled=!S.band;
+    g.imageSmoothingEnabled=true;
     g.imageSmoothingQuality="high";
     g.drawImage(heat, hx0, hy0, hw, hh);
+    let bandLabels=null;
+    if(bandField) bandLabels=drawContourLines(g,bandField,W,H,m,land);
     g.restore();
+    let bandRects=[];
+    if(bandLabels) bandRects=drawContourLabels(g,bandLabels,m);
 
     drawGridDividers(g,x0,y0,x1,y1,scale,ox,oy,m);
     // Point dots/labels are still skipped on the coarse interactive pass —
     // that's just deferring some text/marker drawing to the settled frame,
     // never a stale raster, so it can't cause the clipping bug above.
     if(!fast){
-      const reserved = S.title ? overlayRects(g,W,H,m) : [];
+      const reserved = (S.title ? overlayRects(g,W,H,m) : []).concat(bandRects);
       drawPointsAndLabels(g,W,H,scale,ox,oy,m,reserved,b);
     }
     g.restore();
@@ -4032,8 +4255,12 @@ function drawGridDividers(g,x0,y0,x1,y1,scale,ox,oy,m){
 // (overlayRects) and the actual drawing (drawTitleAndLegend) call this, so
 // the two can never drift apart the way they once did when the bar's
 // position was hard-coded separately in each place.
+// Legend text/bar width follow the bar's own height (which is a fraction of the canvas
+// height), so a short phone canvas and a tall PC canvas keep identical proportions.
+let exportMul = 1;   // css->PNG scale while exporting (1 on screen)
+function legendM(H,m){ const k=exportMul; return k*Math.max(0.4, Math.min(m/k, (H/k)/620)); }
 function legendGeometry(W,H,m){
-  const ms=m*legendSizeMult;
+  const ms=legendM(H,m)*legendSizeMult;
   const barW=22*ms, barH=Math.min(H*0.32,300*m)*legendHeightMult*legendSizeMult;
   const margin=22*m;
   const side = legendPos.endsWith("-right") ? "right" : "left";
@@ -4048,8 +4275,11 @@ function legendGeometry(W,H,m){
   // so this is "drag up/down within your corner", not "drag anywhere on the
   // canvas". Bottom-right keeps its usual extra clearance so the bar's own
   // "Farther" label doesn't collide with the download button.
-  const topY = 58*m;
-  const botY = H-barH-(side==="right" ? 96*m : 58*m);
+  // Corner-symmetric: the block (caption text included) sits the same distance from the
+  // left/right edge as from the top/bottom edge.
+  const capExt = legendShowCaps ? 15*ms*(0.95+0.55) : 0;
+  const topY = margin+capExt;
+  const botY = H-barH-(side==="right" ? 96*m : margin+capExt);
   const pct = Math.max(0, Math.min(100, legendVOffset))/100;
   const barY = botY>topY ? topY+(botY-topY)*pct : topY;
   return {barW,barH,barX,barY,side,tickSide};
@@ -4059,12 +4289,12 @@ function legendGeometry(W,H,m){
 // population name is drawn underneath it and then buried.
 function overlayRects(g,W,H,m){
   const {barW,barH,barX,barY,side}=legendGeometry(W,H,m);
-  const lblS=15*m*legendSizeMult;
+  const lblS=15*legendM(H,m)*legendSizeMult;
   const rects=[];
 
   // The reserved box always spans from the bar out toward the side its
   // tick/value labels grow into, whichever edge the bar itself is on.
-  const reach=90*m*legendSizeMult;
+  const reach=90*legendM(H,m)*legendSizeMult;
   const boxX = side==="left" ? 8*m : Math.max(8*m, barX-reach);
   const boxW = side==="left" ? (barX+barW+reach-boxX) : (barX+barW+8*m-boxX);
   if(legendShowBar) rects.unshift({x:boxX, y:barY-lblS*2.6, w:boxW, h:barH+lblS*5.2});
@@ -4161,6 +4391,9 @@ function drawClosestLegend(g,W,H,m){
 function drawPointsAndLabels(g,W,H,scale,ox,oy,m,reserved,clipBox){
   const z=(S.size||1);
   const r=1.45*m*z, fontSize=7.8*m*z;
+  // Halo/outline widths used to stay fixed while the text shrank, so at small label sizes (Mini, Tiny...)
+  // the dark outline swallowed the letters. Let them shrink with the text below Normal.
+  const hz=Math.min(1, Math.sqrt(z/0.92));   // sqrt: shrinks, but keeps a visible outline at the tiny sizes
   g.font=`600 ${fontSize}px "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif`;
   g.textBaseline="middle";
 
@@ -4223,7 +4456,7 @@ function drawPointsAndLabels(g,W,H,scale,ox,oy,m,reserved,clipBox){
       g.beginPath();
       g.arc(o.sx,o.sy,r,0,Math.PI*2);
       g.fillStyle="#ffffff"; g.fill();
-      g.lineWidth=0.7*m;
+      g.lineWidth=0.7*m*hz;
       g.strokeStyle="rgba(12,18,30,0.7)"; g.stroke();
     }
   }
@@ -4231,7 +4464,7 @@ function drawPointsAndLabels(g,W,H,scale,ox,oy,m,reserved,clipBox){
   // White names with a dark halo: legible over the warm and the cold end of the
   // ramp alike, which dark-on-light was not.
   g.lineJoin="round";
-  g.lineWidth=2.0*m;
+  g.lineWidth=2.0*m*hz;
   g.strokeStyle="rgba(12,18,30,0.72)";
   for(const j of jobs) g.strokeText(j.text,j.x,j.y);
   g.fillStyle="#ffffff";
@@ -4260,7 +4493,7 @@ function drawTitleAndLegend(g,W,H,m){
   g.textBaseline="middle";
 
   const {barW,barH,barX,barY,side,tickSide}=legendGeometry(W,H,m);
-  const ms=m*legendSizeMult;
+  const ms=legendM(H,m)*legendSizeMult;
   const lblS=15*ms, valS=13.5*ms;
 
   if(legendShowBar){
@@ -4299,25 +4532,39 @@ function drawTitleAndLegend(g,W,H,m){
   const capX = tickSide==="right" ? barX : barX+barW;
   const capAlign = tickSide==="right" ? "left" : "right";
   if(legendShowCaps){
-    label("Closer",capX,barY-lblS*1.5,lblS,700,capAlign);
-    label("Farther",capX,barY+barH+lblS*1.5,lblS,700,capAlign);
+    const capS=lblS, capGap=lblS*0.95;
+    label("Closer",capX,barY-capGap,capS,700,capAlign);
+    label("Farther",capX,barY+barH+capGap,capS,700,capAlign);
   }
 
-  // Evenly spaced tick values so a reader can read a distance off the bar.
   const lo=state.minDist, hi=state.maxDist;
   const stepV=niceStep(hi-lo,6);
-  const decimals=Math.max(0,Math.min(4,Math.ceil(-Math.log10(stepV))));
   const tickX = tickSide==="right" ? barX+barW : barX;
   const tickDir = tickSide==="right" ? 1 : -1;
   const tickAlign = tickSide==="right" ? "left" : "right";
-  for(let v=Math.ceil(lo/stepV)*stepV; v<=hi+1e-9; v+=stepV){
-    const t=(v-lo)/((hi-lo)||1);
-    if(t<-1e-6||t>1+1e-6) continue;
-    const y=barY+t*barH;
-    g.strokeStyle="rgba(30,36,50,0.65)";
-    g.lineWidth=1*ms;
-    g.beginPath(); g.moveTo(tickX,y); g.lineTo(tickX+4*ms*tickDir,y); g.stroke();
-    label(v.toFixed(decimals), tickX+7*ms*tickDir, y, valS, 600, tickAlign);
+  if(legendAllTicks){
+    // Evenly spaced tick values so a reader can read a distance off the bar.
+    const decimals=Math.max(0,Math.min(4,Math.ceil(-Math.log10(stepV))));
+    for(let v=Math.ceil(lo/stepV)*stepV; v<=hi+1e-9; v+=stepV){
+      const t=(v-lo)/((hi-lo)||1);
+      if(t<-1e-6||t>1+1e-6) continue;
+      const y=barY+t*barH;
+      g.strokeStyle="rgba(30,36,50,0.65)";
+      g.lineWidth=1*ms;
+      g.beginPath(); g.moveTo(tickX,y); g.lineTo(tickX+4*ms*tickDir,y); g.stroke();
+      label(v.toFixed(decimals), tickX+7*ms*tickDir, y, valS, 600, tickAlign);
+    }
+  } else {
+    // Default: only the two end values (closest / farthest), tucked at the top and bottom of the bar.
+    const decimals=Math.max(0,Math.min(4,Math.ceil(-Math.log10(stepV))+1));
+    [[lo,0],[hi,1]].forEach(([v,t])=>{
+      const y=barY+t*barH;
+      g.strokeStyle="rgba(30,36,50,0.65)";
+      g.lineWidth=1*ms;
+      g.beginPath(); g.moveTo(tickX,y); g.lineTo(tickX+4*ms*tickDir,y); g.stroke();
+      const ly = t===0 ? y+valS*0.55 : y-valS*0.55;
+      label(v.toFixed(decimals), tickX+7*ms*tickDir, ly, valS, 600, tickAlign);
+    });
   }
   } // legendShowBar
   g.textAlign="left";
@@ -4482,6 +4729,25 @@ zoomOutBtn.addEventListener("click", ()=>{ view.scale/=1.25; requestRender(false
   sizeSelect.addEventListener("change", syncSizeBtn);
   syncSizeBtn();
 }
+// Round "Contour bands" toggle next to Aa. The settings checkbox is kept (hidden) as the single source of
+// truth so snapshotSettings() keeps working; this button flips it and redraws live, like the eye toggle.
+{
+  const bandBtn=$("bandBtn");
+  const syncBandBtn=()=>{
+    const on=bandMode.checked;
+    bandBtn.setAttribute("aria-pressed", on?"true":"false");
+    const t="Contour bands: "+(on?"on (click to turn off)":"off (click to turn on)");
+    bandBtn.title=t; bandBtn.setAttribute("aria-label",t);
+  };
+  bandBtn.addEventListener("click", ()=>{
+    bandMode.checked=!bandMode.checked;
+    if(S) S.band=bandMode.checked;
+    syncBandBtn();
+    if(state.hasResult) requestRender(false);
+  });
+  bandMode.addEventListener("change", syncBandBtn);
+  syncBandBtn();
+}
 window.addEventListener("resize", ()=>requestRender(false));
 
 // Floating dots+labels toggle, docked over the map itself. Treated as "on" if
@@ -4608,6 +4874,9 @@ downloadBtn.addEventListener("click", ()=>{
   const isTouch=(navigator.maxTouchPoints>0 && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
   const bigWorld=(state.region.id==="world" && s.w>=900 && !isTouch);
   const OUT_W=bigWorld?8000:4000, OUT_H=Math.round(OUT_W*s.h/s.w), mul=OUT_W/s.w;
+  // The on-screen scene is drawn with m = clamp(width/900, .62, 1); the export must use that SAME m
+  // scaled up by mul, otherwise on a narrow (phone) canvas the labels/halos come out bigger than on screen.
+  const liveM = Math.max(0.62, Math.min(1, s.w/900));
   const label=downloadBtn.innerHTML;
   downloadBtn.textContent="Rendering…";
   downloadBtn.disabled=true;
@@ -4624,7 +4893,9 @@ downloadBtn.addEventListener("click", ()=>{
       // upscaled, softened version of the interactive canvas. World gets the
       // same extra mesh-density multiplier as the live view.
       const worldMult = (state.region.id === "world") ? 2 : 1;
-      drawScene(off.getContext("2d"), OUT_W, OUT_H, view.scale*mul, 7e9*worldMult, mul, 1);
+      exportMul = mul;
+      try{ drawScene(off.getContext("2d"), OUT_W, OUT_H, view.scale*mul, 7e9*worldMult, mul*liveM, 1); }
+      finally{ exportMul = 1; }
       const target=state.targetSamples[state.activeTargetIdx];
       off.toBlob(blob=>{
         const url=URL.createObjectURL(blob);
