@@ -1542,6 +1542,12 @@ const reachDeg=$("reachDeg"), bandMode=$("bandMode");
 const projSelect=$("projSelect"), excludeDiaspora=$("excludeDiaspora");
 const showDots=$("showDots"), showLabels=$("showLabels"), allLabels=$("allLabels");
 const showTitle=$("showTitle"), sizeSelect=$("sizeSelect");
+// World opens with Mini labels/dots by default (it packs the whole planet); other regions use Normal. Once the user picks a size themselves, we stop overriding it.
+let sizeTouched=false, sizeApplyingDefault=false;
+// Default "Label & dot size" per region (option values: 0.36 Mini, 0.55 Tiny, 0.69 Extra small, 0.81 Small, 0.92 Normal).
+// Crowded maps and the ancient regions (very long sample names) open smaller so labels stay readable.
+const REGION_DEFAULT_SIZE = {world:"0.36", bronzeage:"0.36", ironage:"0.36", romanimperial:"0.36", europe:"0.55", westeurasian:"0.55", easteurasian:"0.69", northamerica:"0.69", southamerica:"0.69", mena:"0.81", southasia:"0.81", eastasia:"0.81", seasia:"0.81", centralamerica:"0.81"};
+sizeSelect.addEventListener("change", ()=>{ if(!sizeApplyingDefault) sizeTouched=true; });
 const bgColorBtn=$("bgColorBtn"), bgColorPopup=$("bgColorPopup"), bgColorSwatch=$("bgColorSwatch");
 let bgColor="#ffffff";
 if(bgColorBtn && bgColorPopup){
@@ -1997,6 +2003,12 @@ function openRegion(r, push){
   studio.classList.add("on");
   setActiveRegionNav(r);
   reachTouched=false;
+  if(!sizeTouched){
+    const wantSize = REGION_DEFAULT_SIZE[r.id] || "0.92";
+    if(sizeSelect.value!==wantSize){
+      sizeApplyingDefault=true; sizeSelect.value=wantSize; sizeSelect.dispatchEvent(new Event("change")); sizeApplyingDefault=false;
+    }
+  }
   snapshotSettings();
   PROJ = S.proj;
   resetView();
@@ -4795,6 +4807,7 @@ zoomOutBtn.addEventListener("click", ()=>{ view.scale/=1.25; requestRender(false
   };
   sizeBtn.addEventListener("click", ()=>{
     sizeSelect.selectedIndex=(sizeSelect.selectedIndex+1)%sizeSelect.options.length;
+    sizeTouched=true;
     // Applied live like the eye toggle (no "press Generate" prompt).
     if(S) S.size=parseFloat(sizeSelect.value)||1;
     syncSizeBtn();
