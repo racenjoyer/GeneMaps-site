@@ -14,7 +14,7 @@
      screenshots, where every device's rendering looked slightly different. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%20%3Cdefs%3E%20%3CradialGradient%20id=%22heat%22%20cx=%2238%25%22%20cy=%2234%25%22%20r=%2275%25%22%3E%20%3Cstop%20offset=%220%25%22%20stop-color=%22%23fff2c9%22/%3E%20%3Cstop%20offset=%2218%25%22%20stop-color=%22%23ffcf3b%22/%3E%20%3Cstop%20offset=%2242%25%22%20stop-color=%22%23ff8a3b%22/%3E%20%3Cstop%20offset=%2268%25%22%20stop-color=%22%23ff5b4d%22/%3E%20%3Cstop%20offset=%22100%25%22%20stop-color=%22%233ba7dc%22/%3E%20%3C/radialGradient%3E%20%3C/defs%3E%20%3Crect%20width=%2264%22%20height=%2264%22%20rx=%2214%22%20fill=%22%230d1119%22/%3E%20%3Cpath%20d=%22M%2050.33%2032.00%20C%2050.26%2035.01%2043.88%2038.35%2040.82%2040.82%20C%2037.77%2043.30%2035.16%2046.64%2032.00%2046.86%20C%2028.84%2047.08%2025.05%2044.63%2021.84%2042.16%20C%2018.63%2039.68%2013.26%2035.89%2012.75%2032.00%20C%2012.24%2028.11%2015.58%2022.25%2018.79%2018.79%20C%2022.00%2015.33%2028.26%2010.60%2032.00%2011.27%20C%2035.74%2011.93%2038.19%2019.30%2041.24%2022.76%20C%2044.29%2026.22%2050.40%2028.99%2050.33%2032.00%20Z%22%20fill=%22url%28%23heat%29%22/%3E%20%3Cpath%20d=%22M%2045.48%2032.00%20C%2045.42%2034.21%2040.73%2036.67%2038.49%2038.49%20C%2036.24%2040.31%2034.33%2042.76%2032.00%2042.93%20C%2029.67%2043.09%2026.89%2041.29%2024.53%2039.47%20C%2022.17%2037.65%2018.22%2034.86%2017.84%2032.00%20C%2017.47%2029.14%2019.93%2024.83%2022.29%2022.29%20C%2024.65%2019.75%2029.25%2016.27%2032.00%2016.75%20C%2034.75%2017.24%2036.55%2022.66%2038.79%2025.21%20C%2041.04%2027.75%2045.53%2029.79%2045.48%2032.00%20Z%22%20fill=%22none%22%20stroke=%22%230d1119%22%20stroke-width=%221.15%22%20opacity=%22.55%22/%3E%20%3Cpath%20d=%22M%2040.62%2032.00%20C%2040.59%2033.42%2037.59%2034.99%2036.15%2036.15%20C%2034.71%2037.32%2033.49%2038.89%2032.00%2038.99%20C%2030.51%2039.10%2028.73%2037.95%2027.22%2036.78%20C%2025.71%2035.61%2023.18%2033.83%2022.94%2032.00%20C%2022.70%2030.17%2024.27%2027.41%2025.78%2025.78%20C%2027.29%2024.16%2030.24%2021.93%2032.00%2022.24%20C%2033.76%2022.55%2034.91%2026.03%2036.35%2027.65%20C%2037.79%2029.28%2040.66%2030.58%2040.62%2032.00%20Z%22%20fill=%22none%22%20stroke=%22%230d1119%22%20stroke-width=%221.15%22%20opacity=%22.55%22/%3E%20%3C/svg%3E">
 <!-- Open Graph / social link previews -->
 <meta property="og:type" content="website">
@@ -421,6 +421,113 @@
   ::-webkit-scrollbar-thumb{background:#26304a;border-radius:4px;}
   .divider{height:1px;background:var(--border);margin:2px 0;}
 
+  /* ================= premium skin =================
+     Pure visual layer on top of everything above: typography (Sora for headings/buttons, Inter stays for text and the
+     map canvas), glass panels, soft glows, refined focus/hover states. No layout, no logic, nothing that touches the map. */
+  :root{ --display:"Sora","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --glass:rgba(255,255,255,.035); --glass-b:rgba(255,255,255,.085); --ring:0 0 0 3px rgba(59,167,220,.2); }
+  ::selection{background:rgba(255,138,59,.35);color:#fff;}
+  html{scrollbar-color:#2c3753 transparent;scrollbar-width:thin;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#27314b;border-radius:8px;border:2px solid transparent;background-clip:content-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#3a4868;background-clip:content-box;border:2px solid transparent;}
+
+  /* home */
+  #hero{background:
+      radial-gradient(60% 50% at 18% 78%,rgba(255,110,60,.10) 0%,rgba(255,110,60,0) 70%),
+      radial-gradient(55% 55% at 84% 18%,rgba(59,167,220,.12) 0%,rgba(59,167,220,0) 70%),
+      radial-gradient(120% 90% at 50% 0%,#18203a 0%,var(--bg) 70%);}
+  #hero h1{font-family:var(--display);font-size:62px;letter-spacing:-.035em;font-weight:800;}
+  #hero h1 span{background:linear-gradient(100deg,#ff5b4d,#ff9a3b 40%,#ffd479 62%,#7cc9ec);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  #heroStats{gap:12px;margin-top:40px;}
+  .stat{padding:13px 24px 12px;border:1px solid var(--glass-b);border-radius:16px;background:var(--glass);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    box-shadow:0 8px 26px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.06);}
+  .stat b{font-family:var(--display);font-size:21px;font-weight:700;letter-spacing:-.01em;
+    background:linear-gradient(180deg,#fff,#b9c4dc);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .stat span{font-size:10.5px;letter-spacing:.12em;}
+  #regionPickerBtn{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.005em;overflow:hidden;
+    box-shadow:0 14px 36px rgba(255,90,60,.38),0 0 0 1px rgba(255,255,255,.16) inset,0 1px 0 rgba(255,255,255,.35) inset;}
+  #regionPickerBtn::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.42),transparent);transform:skewX(-20deg);
+    transition:left .65s cubic-bezier(.2,.8,.2,1);pointer-events:none;}
+  #regionPickerBtn:hover::after{left:130%;}
+  .pillBtn{color:#c9d3e8;border:1px solid var(--glass-b);background:var(--glass);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-weight:500;letter-spacing:.02em;}
+  .pillBtn:hover{color:#0a1620;border-color:var(--accent2);background:var(--accent2);box-shadow:0 6px 20px rgba(59,167,220,.3);}
+  .pillBtn.donatePill{color:#ff9fb3;border-color:rgba(255,91,120,.35);background:rgba(255,91,120,.07);}
+  .pillBtn.donatePill:hover{color:#2a0a10;border-color:#ff5b78;background:#ff5b78;box-shadow:0 6px 20px rgba(255,91,120,.3);}
+
+  /* modals */
+  #aboutModal,#contactModal,#worldModal{background:rgba(5,8,14,.62);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);}
+  #aboutCard,#contactCard,#worldCard{background:linear-gradient(180deg,#182033 0%,#121826 100%);
+    border:1px solid rgba(255,255,255,.1);border-radius:20px;
+    box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);animation:cardIn .35s cubic-bezier(.16,1,.3,1) both;}
+  #worldCard{border-color:rgba(167,139,250,.4);box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 60px rgba(167,139,250,.12),inset 0 1px 0 rgba(255,255,255,.07);}
+  #aboutCard h2,#contactCard h2,#worldCard h2{font-family:var(--display);letter-spacing:-.02em;}
+  #worldCard .wPrice{font-family:var(--display);}
+  .faqItem h3{font-family:var(--display);font-weight:600;letter-spacing:-.005em;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.985);}to{opacity:1;transform:none;}}
+
+  /* studio */
+  #studio.on{animation:studioIn .45s ease both;}
+  @keyframes studioIn{from{opacity:0;}to{opacity:1;}}
+  #sidebar{background:linear-gradient(180deg,#151c2b 0%,#10151f 100%);border-right:1px solid rgba(255,255,255,.07);
+    padding:16px 14px;gap:14px;box-shadow:6px 0 30px rgba(0,0,0,.25);position:relative;z-index:2;}
+  #regionName{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-.025em;}
+  #backBtn{letter-spacing:.02em;transition:color .15s,transform .15s;}
+  #backBtn:hover{transform:translateX(-2px);}
+  fieldset{border:1px solid var(--glass-b);border-radius:14px;background:var(--glass);padding:11px 13px 14px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
+  legend{font-family:var(--display);font-size:10.5px;letter-spacing:.13em;color:#9ba7c0;}
+  textarea,input[type=number],select{background:#0a0f19;border:1px solid rgba(255,255,255,.09);border-radius:10px;
+    transition:border-color .15s,box-shadow .15s;}
+  textarea:hover,input[type=number]:hover,select:hover{border-color:rgba(255,255,255,.18);}
+  textarea:focus,input[type=number]:focus,select:focus{outline:none;border-color:var(--accent2);box-shadow:var(--ring);}
+  button{border-radius:10px;border-color:rgba(255,255,255,.1);transition:border-color .15s,background .15s,transform .15s,box-shadow .15s,filter .15s;}
+  button:hover{border-color:rgba(59,167,220,.7);}
+  button:active:not(:disabled){transform:translateY(1px);}
+  button.primary{font-family:var(--display);font-weight:700;letter-spacing:.01em;border-radius:12px;padding:12px;
+    box-shadow:0 10px 26px rgba(255,90,60,.28),inset 0 1px 0 rgba(255,255,255,.3);}
+  button.primary:hover{filter:brightness(1.07);transform:translateY(-1px);box-shadow:0 14px 32px rgba(255,90,60,.36),inset 0 1px 0 rgba(255,255,255,.3);}
+  .modeBtn{border:1px solid var(--glass-b);border-radius:14px;background:var(--glass);}
+  .modeBtn:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06);}
+  .modeBtn span{font-family:var(--display);font-weight:600;letter-spacing:.005em;}
+  .modeBtn.active{border-color:rgba(96,165,250,.7);background:linear-gradient(180deg,rgba(96,165,250,.2),rgba(96,165,250,.08));
+    box-shadow:0 0 0 1px rgba(96,165,250,.25),0 8px 24px rgba(96,165,250,.16);}
+  .status{border-radius:9px;}
+  input[type=checkbox],input[type=range]{accent-color:var(--accent2);}
+
+  /* region bar, top bar, bottom bar */
+  #regionNav{background:linear-gradient(180deg,#0d1422,#0a101b);border-bottom:1px solid rgba(255,255,255,.07);}
+  .navBtn{border-radius:10px;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s;}
+  .navBtn:hover{background:rgba(255,255,255,.045);transform:translateY(-1px);}
+  .navBtn span{font-family:var(--display);font-weight:500;font-size:9.5px;letter-spacing:.01em;}
+  .navBtn.active{border-color:rgba(96,165,250,.65);background:linear-gradient(180deg,rgba(96,165,250,.2),rgba(96,165,250,.08));
+    box-shadow:0 4px 16px rgba(96,165,250,.2);}
+  #topbar{background:linear-gradient(180deg,#0e1524,#0a101b);border-bottom:1px solid rgba(255,255,255,.07);}
+  #titleMain{font-family:var(--display);font-size:14px;font-weight:600;letter-spacing:-.01em;}
+  .nfItem .nfLabel{letter-spacing:.12em;font-size:9px;}
+  .nfItem .nfVal{font-family:var(--display);font-weight:600;}
+  #mapBar{background:linear-gradient(0deg,#0d1422,#0a101b);border-top:1px solid rgba(255,255,255,.07);}
+  #toggleDotsBtn,#sizeBtn,#legendPosBtn,#bandBtn{border-color:rgba(255,255,255,.12);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(0,0,0,.3);}
+  #mapBar button.dl{font-family:var(--display);font-weight:700;letter-spacing:.005em;border:none;
+    background:linear-gradient(135deg,#46b3e8,#2f8fd0);color:#06131d;
+    box-shadow:0 10px 26px rgba(59,167,220,.32),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .18s,box-shadow .18s,filter .18s;}
+  #mapBar button.dl:hover{filter:brightness(1.07);transform:translateY(-1px);box-shadow:0 14px 32px rgba(59,167,220,.42),inset 0 1px 0 rgba(255,255,255,.35);}
+  #listBtn{font-family:var(--display);font-weight:700;border:1.5px solid rgba(59,167,220,.8);
+    background:rgba(59,167,220,.1);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:background .18s,transform .18s,box-shadow .18s;}
+  #listBtn:hover{background:rgba(59,167,220,.22);transform:translateY(-1px);box-shadow:0 10px 26px rgba(59,167,220,.22);}
+  #listPanel{background:linear-gradient(180deg,#141b29,#10151f);border-left:1px solid rgba(255,255,255,.08);box-shadow:-14px 0 40px rgba(0,0,0,.35);}
+  #listHead{background:linear-gradient(180deg,#0e1524,#0a101b);}
+  #listTitle{font-family:var(--display);font-weight:600;}
+  #legendPosMenu,.popup-menu,#regionLockedTip,.soonTip{border-color:rgba(255,255,255,.1);border-radius:12px;
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 16px 40px rgba(0,0,0,.5);}
+  @media (prefers-reduced-motion:reduce){ #studio.on,#aboutCard,#contactCard,#worldCard{animation:none!important;} }
+
   /* ---------------- mobile / narrow screens ----------------
      Everything above this point was written for a desktop-width layout
      (fixed 336px sidebar beside the map, an absolutely-positioned left/
@@ -433,7 +540,46 @@
      and lets mapBar/topbar wrap onto more than one line -- no JS changes
      needed, every element keeps working exactly as before, just laid out
      differently below the breakpoint. */
+  #worldPreview video{width:100%;display:block;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin:0 0 16px;background:#0a0e17;
+    border:1px solid rgba(255,255,255,.08);box-shadow:0 10px 30px rgba(0,0,0,.4);}
+  /* ---- ux round 2 ---- */
+  .linkBtn{background:none;border:none;color:var(--accent2);font-size:12px;padding:6px 2px;margin-top:-4px;cursor:pointer;
+    text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(59,167,220,.4);}
+  .linkBtn:hover{border:none;color:#7cc9ec;}
+  #bandBtn{display:none!important;}
+  .navBtn{width:auto;min-width:58px;padding:1px 7px;}
+  .navBtn span{overflow:visible;text-overflow:clip;font-size:10.5px;}
+  .nfItem .nfLabel{font-size:10px;}
+  .hint{font-size:11.5px;}
+  .modeBtn span{font-size:11.5px;}
+  label.small{font-size:12px;}
+  #shareWrap{position:relative;display:inline-flex;}
+  #shareBtn{height:48px;padding:0 22px;border-radius:999px;font-family:var(--display);font-weight:700;font-size:14px;
+    color:#d6dcf0;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.22);display:inline-flex;align-items:center;gap:8px;
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+  #shareBtn svg{width:17px;height:17px;flex:0 0 auto;}
+  #shareBtn:hover{border-color:#fff;background:rgba(255,255,255,.1);transform:translateY(-1px);}
+  #shareMenu{display:none;position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);min-width:210px;
+    background:linear-gradient(180deg,#182033,#121826);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:6px;z-index:30;
+    box-shadow:0 18px 44px rgba(0,0,0,.55);}
+  #shareMenu.on{display:block;}
+  #shareMenu button{display:block;width:100%;text-align:left;background:none;border:none;border-radius:9px;padding:9px 12px;
+    font-size:13px;font-weight:600;color:var(--text);}
+  #shareMenu button:hover{background:rgba(59,167,220,.16);}
+  #shareMenu .hint{padding:4px 12px 6px;margin:0;}
+  #gmToast{position:fixed;left:50%;bottom:84px;transform:translate(-50%,12px);background:rgba(11,17,28,.96);color:#fff;
+    border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 16px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;
+    transition:opacity .2s,transform .2s;z-index:99999;box-shadow:0 12px 30px rgba(0,0,0,.5);}
+  #gmToast.on{opacity:1;transform:translate(-50%,0);}
+  #sbFab{display:none;position:absolute;top:12px;left:12px;z-index:4;height:36px;padding:0 14px;border-radius:999px;
+    background:rgba(11,17,28,.88);border:1px solid rgba(255,255,255,.16);color:var(--text);font-size:12.5px;font-weight:600;
+    align-items:center;gap:6px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+
   @media (max-width:820px){
+    #sbFab{display:inline-flex;}
+    #studio.sbCollapsed #sidebar{display:none;}
+    #shareBtn{height:42px;padding:0 16px;font-size:13px;order:2;}
+    #shareWrap{order:2;}
     /* Safety valve on top of the 100dvh fix above: if a particular phone's
        chrome still leaves the stacked sidebar+topbar+map+mapBar taller than
        the visible area, #studio itself scrolls instead of clipping content
@@ -482,7 +628,10 @@
     #hero{padding:48px 18px;}
     #hero h1{font-size:38px;}
     #hero p{font-size:13.5px;}
-    #heroStats{gap:16px;margin-top:28px;}
+    #heroStats{gap:8px;margin-top:28px;flex-wrap:nowrap;}
+    .stat{padding:9px 11px 8px;border-radius:13px;}
+    .stat b{font-size:17px;}
+    .stat span{font-size:8.5px;letter-spacing:.07em;}
     #topCorner{top:12px;right:14px;}
     #topCornerLeft{top:12px;left:14px;}
     #mapBar button{padding:8px 12px;}
@@ -595,6 +744,7 @@
     <button id="worldCloseBtn" type="button" aria-label="Close">✕</button>
     <h2 id="worldTitle">World — the full global map</h2>
     <div id="worldBuy">
+      <div id="worldPreview"><video id="worldPreviewVid" muted loop playsinline preload="none" poster="world_preview_poster.jpg" aria-label="Preview of the World map"></video></div>
       <div class="wPrice" id="worldPrice">$10<small>one-time · lifetime · one device</small></div>
       <p>Unlock the complete world map with every population. Pay once with PayPal; you get a personal licence code tied to your device.</p>
       <div id="ppButtons"></div>
@@ -672,6 +822,7 @@
     </fieldset>
 
     <button class="primary" id="generateBtn">Generate heatmap</button>
+    <button type="button" class="linkBtn" id="exampleBtn">No sample yet? Try an example</button>
     <div id="pendingNote">Settings changed — press Generate to apply</div>
 
     <fieldset id="scaleFieldset">
@@ -730,7 +881,7 @@
         <option value="1.29">Extra large</option>
       </select>
       <div class="checkrow"><input type="checkbox" id="showDots" checked><label for="showDots">Population dots</label></div>
-      <div class="checkrow"><input type="checkbox" id="showLabels" checked><label for="showLabels">Population names</label></div>
+      <div class="checkrow"><input type="checkbox" id="showLabels"><label for="showLabels">Population names</label></div>
       <div class="checkrow"><input type="checkbox" id="allLabels"><label for="allLabels">Force every name (may overlap)</label></div>
       <div class="checkrow"><input type="checkbox" id="showTitle" checked><label for="showTitle">Title &amp; legend on map</label></div>
       <div class="checkrow"><input type="checkbox" id="showRelief" checked><label for="showRelief">Terrain relief</label></div>
@@ -788,6 +939,7 @@
     </div>
     <div id="canvasWrap">
       <canvas id="mapCanvas"></canvas>
+      <button id="sbFab" type="button">⚙ Settings</button>
       <button id="toggleDotsBtn" type="button" aria-label="Hide population dots and names" title="Hide population dots and names" aria-pressed="false">
         <svg class="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"/>
@@ -851,6 +1003,14 @@
         <button id="mapDisclaimer" type="button">May contain errors — report</button>
       </div>
       <button id="downloadBtn" class="dl"><svg class="dlIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v11.19l3.72-3.72a.75.75 0 1 1 1.06 1.06l-5 5a.75.75 0 0 1-1.06 0l-5-5a.75.75 0 1 1 1.06-1.06l3.72 3.72V3a.75.75 0 0 1 .75-.75Zm-9 15a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V18a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V18a.75.75 0 0 1 .75-.75Z"/></svg>Download PNG</button>
+      <div id="shareWrap">
+        <button id="shareBtn" type="button" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.6l6.8-4.2M8.6 13.4l6.8 4.2"/></svg>Share</button>
+        <div id="shareMenu" role="menu">
+          <button type="button" data-act="copy">Copy link</button>
+          <button type="button" data-act="x">Post on X</button>
+          <div class="hint">The link opens this map with your sample numbers included.</div>
+        </div>
+      </div>
       <button id="listBtn">View Distances</button>
       <div id="mapBarRight">
         <button id="aboutBtnMap" class="pillBtn" type="button">About</button>
@@ -1793,6 +1953,7 @@ function buildRegionNav(){
     b.type="button";
     b.innerHTML = `<canvas class="navIcon"></canvas><span></span>`;
     b.querySelector("span").textContent = NAV_SHORT_LABEL[r.id] || r.label;
+    b.title = r.label;
     const locked = PUBLIC_BUILD && LOCKED_REGION_IDS.has(r.id);
     if(locked){
       b.classList.add("navBtnLocked");
@@ -1904,8 +2065,10 @@ function worldShow(mode){ // "buy" | "manage"
   $("worldTitle").textContent = mode==="manage" ? "World — your licence" : "World — the full global map";
   if(mode==="manage"){ const c=LS.get("gm_code")||""; $("worldMyCode").textContent=c; $("worldMyCodeRow").style.display=c?"":"none"; }
   worldModal.classList.add("on");
+  const pv=$("worldPreviewVid");
+  if(mode==="buy"){ if(!pv.getAttribute("src")) pv.src="world_preview.mp4"; const pr=pv.play(); if(pr&&pr.catch) pr.catch(()=>{}); } else pv.pause();
 }
-function worldClose(){ worldModal.classList.remove("on"); worldStatus(""); }
+function worldClose(){ worldModal.classList.remove("on"); worldStatus(""); try{ $("worldPreviewVid").pause(); }catch(e){} }
 $("worldCloseBtn").addEventListener("click", worldClose);
 worldModal.addEventListener("click", e=>{ if(e.target===worldModal) worldClose(); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") worldClose(); });
@@ -2041,6 +2204,7 @@ function openRegion(r, push){
   state.region = r;
   regionIslandRings = null;
   loadHiLand(r);
+  studio.classList.remove("sbCollapsed");
   state.hasResult = false;
   state.points = [];
   regionName.textContent = r.label;
@@ -5509,6 +5673,16 @@ downloadBtn.addEventListener("click", ()=>{
       exportMul = mul;
       try{ drawScene(off.getContext("2d"), OUT_W, OUT_H, view.scale*mul, 7e9*worldMult, mul*liveM, 1); }
       finally{ exportMul = 1; }
+      // Copyright mark, exported PNG only: white bold text on a translucent dark box, bottom-right.
+      // Box is sized from the real glyph bounds so the padding is even on all four sides.
+      { const wg=off.getContext("2d"), fs=Math.round(OUT_W*0.012), mg=Math.round(OUT_W*0.011), pad=Math.round(fs*0.42);
+        const txt="\u00A9 GeneMaps";
+        wg.save(); wg.font=`700 ${fs}px Inter, system-ui, sans-serif`; wg.textBaseline="alphabetic"; wg.textAlign="left";
+        const m=wg.measureText(txt), asc=m.actualBoundingBoxAscent, desc=m.actualBoundingBoxDescent,
+              tw=m.actualBoundingBoxLeft+m.actualBoundingBoxRight, bw=Math.round(tw+2*pad), bh=Math.round(asc+desc+2*pad),
+              bx=OUT_W-mg-bw, by=OUT_H-mg-bh;
+        wg.fillStyle="rgba(15,20,40,0.62)"; wg.fillRect(bx,by,bw,bh);
+        wg.fillStyle="rgba(255,255,255,0.92)"; wg.fillText(txt,bx+pad+m.actualBoundingBoxLeft,by+pad+asc); wg.restore(); }
       const target=state.targetSamples[state.activeTargetIdx];
       off.toBlob(blob=>{
         const url=URL.createObjectURL(blob);
@@ -5542,6 +5716,86 @@ buildRegionNav();
 if(document.fonts && document.fonts.ready){
   document.fonts.ready.then(()=>{ if(state.hasResult) requestRender(false); });
 }
+
+
+/* ======================= example sample / share link / mobile settings ======================= */
+const EXAMPLE_PICKS={
+  mena:["Egyptian_Arab_Muslim","Saudi_Arab","Persian_Tehran"], caucasus:["Persian_Tehran","Turkish_Istanbul"],
+  africa:["Yoruba_Nigeria"], centralasia:["Kazakh","Persian_Tehran"], southasia:["Indian_South"], eastasia:["Han_Beijing","Japanese"]
+};
+const EXAMPLE_DEFAULT=["Italian_Tuscany","German_Bavaria","Spanish_Castile_and_Leon"];
+function exampleLine(){
+  const r=state.region; if(!r) return null;
+  const pool=(r.idx||[]).concat(r.ctx||[]); if(!pool.length) return null;
+  const have=new Set(pool); const vs=[];
+  for(const nm of (EXAMPLE_PICKS[r.id]||EXAMPLE_DEFAULT)){ const k=POP_NAMES.indexOf(nm); if(k>=0 && have.has(k)) vs.push(POP_VEC[k]); }
+  if(vs.length<2){ for(const f of [0.5,0.35]){ const k=pool[Math.floor(pool.length*f)]; if(k!=null) vs.push(POP_VEC[k]); if(vs.length>=2) break; } }
+  if(!vs.length) return null;
+  const n=vs[0].length, m=new Array(n).fill(0);
+  for(const v of vs) for(let i=0;i<n;i++) m[i]+=v[i]/vs.length;
+  return "Example_Sample,"+m.map(x=>x.toFixed(6)).join(",");
+}
+$("exampleBtn").addEventListener("click", ()=>{
+  const line=exampleLine();
+  if(!line){ gmToast("No example available for this map"); return; }
+  targetInput.value=line; targetInput.dispatchEvent(new Event("input")); generateBtn.click();
+});
+
+let gmToastTimer=null;
+function gmToast(msg){
+  let el=document.getElementById("gmToast");
+  if(!el){ el=document.createElement("div"); el.id="gmToast"; document.body.appendChild(el); }
+  el.textContent=msg; el.classList.add("on"); clearTimeout(gmToastTimer);
+  gmToastTimer=setTimeout(()=>el.classList.remove("on"),2200);
+}
+function currentShareUrl(){
+  const t=state.targetSamples && state.targetSamples[state.activeTargetIdx||0];
+  if(!t || !state.region) return null;
+  const vec=t.vec.map(x=>+(+x).toFixed(6)).join(",");
+  const base=location.href.split("#")[0];
+  return base+"#g="+encodeURIComponent(state.region.id+"~"+t.name+"~"+vec);
+}
+const shareBtn=$("shareBtn"), shareMenu=$("shareMenu");
+shareBtn.addEventListener("click",(e)=>{
+  e.stopPropagation();
+  if(!state.hasResult){ gmToast("Generate a map first"); return; }
+  const on=shareMenu.classList.toggle("on"); shareBtn.setAttribute("aria-expanded",on?"true":"false");
+});
+document.addEventListener("click",(e)=>{ if(!shareMenu.contains(e.target)){ shareMenu.classList.remove("on"); shareBtn.setAttribute("aria-expanded","false"); } });
+shareMenu.addEventListener("click",(e)=>{
+  const b=e.target.closest("button[data-act]"); if(!b) return;
+  const url=currentShareUrl(); shareMenu.classList.remove("on"); if(!url) return;
+  if(b.dataset.act==="x"){
+    const t=state.targetSamples[state.activeTargetIdx||0];
+    const text=`Genetic distance heatmap of ${t.name} (${state.region.label}) made with GeneMaps`;
+    window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(text)+"&url="+encodeURIComponent(url),"_blank","noopener");
+  } else {
+    const done=()=>gmToast("Link copied");
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done,()=>window.prompt("Copy this link:",url)); }
+    else window.prompt("Copy this link:",url);
+  }
+});
+// Open a shared link: #g=region~name~25 numbers
+(function loadShared(){
+  try{
+    const h=location.hash; if(!h.startsWith("#g=")) return;
+    const [rid,name,vec]=decodeURIComponent(h.slice(3)).split("~");
+    const r=REGIONS.find(x=>x.id===rid);
+    if(!r || (r.premium && !r.loaded) || (typeof PUBLIC_BUILD!=="undefined" && PUBLIC_BUILD && LOCKED_REGION_IDS.has(rid))) return;
+    if(!name || !vec || vec.split(",").length<20) return;
+    openRegion(r,false); history.replaceState({view:"studio",regionId:r.id},"");
+    targetInput.value=name+","+vec; targetInput.dispatchEvent(new Event("input")); generateBtn.click();
+  }catch(e){ console.error(e); }
+})();
+
+// Phones: the settings panel takes half the screen, so after generating it folds away and a floating button brings it back.
+const sbFab=$("sbFab");
+function syncFab(){ const c=studio.classList.contains("sbCollapsed"); sbFab.textContent=c?"\u2699 Settings":"\u2715 Hide settings"; }
+sbFab.addEventListener("click",()=>{ studio.classList.toggle("sbCollapsed"); syncFab(); setTimeout(()=>window.dispatchEvent(new Event("resize")),60); });
+generateBtn.addEventListener("click",()=>{
+  if(state.hasResult && window.matchMedia("(max-width:820px)").matches){ studio.classList.add("sbCollapsed"); syncFab(); setTimeout(()=>window.dispatchEvent(new Event("resize")),60); }
+});
+syncFab();
 
 })();
 
