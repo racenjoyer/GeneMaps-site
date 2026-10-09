@@ -357,6 +357,13 @@
   #sizeBtn,#legendPosBtn,#bandBtn{margin-left:0;border:1px solid var(--border);}
   #bandBtn svg{width:23px;height:23px;flex:0 0 auto;}
   #bandBtn[aria-pressed="true"]{border-color:var(--accent2);color:var(--accent2);background:rgba(59,167,220,.16);}
+  #bandBtn.soon{opacity:.45;cursor:not-allowed;}
+  #bandBtn.soon:hover{border-color:var(--border);color:var(--text);}
+  .soonTip{position:fixed;z-index:9999;white-space:nowrap;box-sizing:border-box;padding:9px 12px;border-radius:10px;
+    background:rgba(11,17,28,.96);color:var(--text);border:1px solid var(--border);font-size:13px;font-weight:600;
+    text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transform:translateY(4px);pointer-events:none;
+    transition:opacity .18s,transform .18s;}
+  .soonTip.on{opacity:1;transform:none;}
   #legendPosBtn svg{width:19px;height:19px;flex:0 0 auto;}
   #mapBar{position:relative;flex:0 0 auto;display:flex;justify-content:center;align-items:center;
     gap:10px;padding:9px 14px;border-top:1px solid var(--border);background:#0b111c;}
@@ -5288,12 +5295,31 @@ zoomOutBtn.addEventListener("click", ()=>{ view.scale/=1.25; requestRender(false
 {
   const bandBtn=$("bandBtn");
   const syncBandBtn=()=>{
+    if(typeof BAND_COMING_SOON!=="undefined" && BAND_COMING_SOON) return;
     const on=bandMode.checked;
     bandBtn.setAttribute("aria-pressed", on?"true":"false");
     const t="Contour bands: "+(on?"on (click to turn off)":"off (click to turn on)");
     bandBtn.title=t; bandBtn.setAttribute("aria-label",t);
   };
+  // Contour bands are not ready yet: the button stays visible but disabled-looking, and clicking it only
+  // shows a "coming soon" note. Set BAND_COMING_SOON=false to bring the feature back exactly as it was.
+  const BAND_COMING_SOON=true;
+  if(BAND_COMING_SOON){
+    bandMode.checked=false; if(S) S.band=false;
+    bandBtn.classList.add("soon");
+    bandBtn.title="Contour bands: coming soon"; bandBtn.setAttribute("aria-label","Contour bands: coming soon");
+  }
+  let soonTip=null, soonT=null;
+  const showSoon=()=>{
+    if(!soonTip){ soonTip=document.createElement("div"); soonTip.className="soonTip"; soonTip.setAttribute("role","status");
+      soonTip.textContent="Contour bands \u2014 coming soon"; document.body.appendChild(soonTip); }
+    const r=bandBtn.getBoundingClientRect();
+    soonTip.style.left=Math.max(8,Math.min(window.innerWidth-240,r.left+r.width/2-110))+"px";
+    soonTip.style.top=Math.max(8,r.top-44)+"px";
+    soonTip.classList.add("on"); clearTimeout(soonT); soonT=setTimeout(()=>soonTip.classList.remove("on"),2600);
+  };
   bandBtn.addEventListener("click", ()=>{
+    if(BAND_COMING_SOON){ bandMode.checked=false; if(S) S.band=false; showSoon(); return; }
     bandMode.checked=!bandMode.checked;
     if(S) S.band=bandMode.checked;
     syncBandBtn();
