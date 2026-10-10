@@ -14,7 +14,12 @@
      screenshots, where every device's rendering looked slightly different. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=block" rel="stylesheet">
+<style>html.fontsWait body{opacity:0;}body{transition:opacity .25s ease;}</style>
+<script>(function(){var d=document.documentElement;d.className+=' fontsWait';var done=false;function go(){if(done)return;done=true;d.className=d.className.replace(' fontsWait','');}
+try{Promise.all([document.fonts.load('400 14px Inter'),document.fonts.load('700 14px Inter'),document.fonts.load('600 14px Sora'),document.fonts.load('700 14px Sora')]).then(go,go);}catch(e){go();}
+setTimeout(go,1500);})();</script>
+
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%20%3Cdefs%3E%20%3CradialGradient%20id=%22heat%22%20cx=%2238%25%22%20cy=%2234%25%22%20r=%2275%25%22%3E%20%3Cstop%20offset=%220%25%22%20stop-color=%22%23fff2c9%22/%3E%20%3Cstop%20offset=%2218%25%22%20stop-color=%22%23ffcf3b%22/%3E%20%3Cstop%20offset=%2242%25%22%20stop-color=%22%23ff8a3b%22/%3E%20%3Cstop%20offset=%2268%25%22%20stop-color=%22%23ff5b4d%22/%3E%20%3Cstop%20offset=%22100%25%22%20stop-color=%22%233ba7dc%22/%3E%20%3C/radialGradient%3E%20%3C/defs%3E%20%3Crect%20width=%2264%22%20height=%2264%22%20rx=%2214%22%20fill=%22%230d1119%22/%3E%20%3Cpath%20d=%22M%2050.33%2032.00%20C%2050.26%2035.01%2043.88%2038.35%2040.82%2040.82%20C%2037.77%2043.30%2035.16%2046.64%2032.00%2046.86%20C%2028.84%2047.08%2025.05%2044.63%2021.84%2042.16%20C%2018.63%2039.68%2013.26%2035.89%2012.75%2032.00%20C%2012.24%2028.11%2015.58%2022.25%2018.79%2018.79%20C%2022.00%2015.33%2028.26%2010.60%2032.00%2011.27%20C%2035.74%2011.93%2038.19%2019.30%2041.24%2022.76%20C%2044.29%2026.22%2050.40%2028.99%2050.33%2032.00%20Z%22%20fill=%22url%28%23heat%29%22/%3E%20%3Cpath%20d=%22M%2045.48%2032.00%20C%2045.42%2034.21%2040.73%2036.67%2038.49%2038.49%20C%2036.24%2040.31%2034.33%2042.76%2032.00%2042.93%20C%2029.67%2043.09%2026.89%2041.29%2024.53%2039.47%20C%2022.17%2037.65%2018.22%2034.86%2017.84%2032.00%20C%2017.47%2029.14%2019.93%2024.83%2022.29%2022.29%20C%2024.65%2019.75%2029.25%2016.27%2032.00%2016.75%20C%2034.75%2017.24%2036.55%2022.66%2038.79%2025.21%20C%2041.04%2027.75%2045.53%2029.79%2045.48%2032.00%20Z%22%20fill=%22none%22%20stroke=%22%230d1119%22%20stroke-width=%221.15%22%20opacity=%22.55%22/%3E%20%3Cpath%20d=%22M%2040.62%2032.00%20C%2040.59%2033.42%2037.59%2034.99%2036.15%2036.15%20C%2034.71%2037.32%2033.49%2038.89%2032.00%2038.99%20C%2030.51%2039.10%2028.73%2037.95%2027.22%2036.78%20C%2025.71%2035.61%2023.18%2033.83%2022.94%2032.00%20C%2022.70%2030.17%2024.27%2027.41%2025.78%2025.78%20C%2027.29%2024.16%2030.24%2021.93%2032.00%2022.24%20C%2033.76%2022.55%2034.91%2026.03%2036.35%2027.65%20C%2037.79%2029.28%2040.66%2030.58%2040.62%2032.00%20Z%22%20fill=%22none%22%20stroke=%22%230d1119%22%20stroke-width=%221.15%22%20opacity=%22.55%22/%3E%20%3C/svg%3E">
 <!-- Open Graph / social link previews -->
 <meta property="og:type" content="website">
@@ -372,7 +377,16 @@
   #mapBarLeft{position:absolute;left:14px;top:50%;transform:translateY(-50%);
     display:flex;gap:8px;}
   #mapDisclaimer{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto;}
-  @media (min-width:821px){ #mapBarLeft{max-width:calc(50% - 190px);align-items:center;} }
+  @media (min-width:821px){ #mapBarLeft{max-width:calc(50% - 285px);align-items:center;} }
+  @media (min-width:821px) and (max-width:1500px){ #mapDisclaimer{display:none;} }
+  /* medium desktop windows: the tools, the three big buttons and About/Contact no longer fit on one line, so the
+     big buttons take the first row and the tools + About/Contact share a second one */
+  @media (min-width:821px) and (max-width:1230px){
+    #mapBar{flex-wrap:wrap;justify-content:center;row-gap:8px;padding:8px 14px;}
+    #mapBarLeft{position:static;transform:none;order:2;max-width:none;flex:1 1 45%;}
+    #mapBarRight{position:static;transform:none;order:3;flex:1 1 45%;justify-content:flex-end;}
+    #downloadBtn,#shareWrap,#listBtn{order:1;}
+  }
   @media (min-width:821px) and (max-width:1150px){ #mapDisclaimer{display:none;} }
   #legendPosWrap{position:relative;}
   #legendPosMenu{display:none;position:absolute;left:0;bottom:calc(100% + 8px);max-height:60vh;overflow-y:auto;
@@ -547,6 +561,22 @@
     text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(59,167,220,.4);}
   .linkBtn:hover{border:none;color:#7cc9ec;}
   #bandBtn{display:none!important;}
+  /* country-borders toggle: sits beside Aa; lit when borders are on, quiet and struck-through when off */
+  #bordersBtn{width:36px;height:36px;padding:0;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    background:rgba(11,17,28,.85);border:1px solid rgba(255,255,255,.12);color:var(--muted);position:relative;transition:.18s;
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(0,0,0,.3);}
+  #bordersBtn svg{width:20px;height:20px;flex:0 0 auto;}
+  #bordersBtn:hover{border-color:var(--accent2);color:var(--accent2);transform:translateY(-1px);}
+  #bordersBtn[aria-pressed="true"]{color:#7fd0f5;border-color:rgba(70,179,232,.6);
+    background:linear-gradient(180deg,rgba(70,179,232,.22),rgba(70,179,232,.08));
+    box-shadow:0 0 0 3px rgba(70,179,232,.10),0 4px 14px rgba(0,0,0,.3);}
+  #bordersBtn[aria-pressed="false"]::after{content:"";position:absolute;left:9px;right:9px;top:50%;height:1.6px;border-radius:2px;
+    background:currentColor;transform:rotate(-42deg);opacity:.85;}
+  #showBorders,label[for="showBorders"]{display:none;}
+  .checkrow:has(#showBorders){display:none;}
+  /* hero stats: no boxes, just numbers */
+  .stat{padding:4px 14px;border:none;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;}
+  @media (max-width:520px){ .stat{padding:4px 8px;} }
   .navBtn{width:auto;min-width:58px;padding:1px 7px;}
   /* nav: slim but visible scrollbar, slimmer pills */
   #regionNav{scrollbar-width:thin;scrollbar-color:#3d5a8a #101828;}
@@ -911,6 +941,7 @@
       <div class="checkrow"><input type="checkbox" id="showTitle" checked><label for="showTitle">Title &amp; legend on map</label></div>
       <div class="checkrow"><input type="checkbox" id="showRelief" checked><label for="showRelief">Terrain relief</label></div>
       <div class="checkrow"><input type="checkbox" id="showWater" checked><label for="showWater">Rivers &amp; lakes</label></div>
+      <div class="checkrow"><input type="checkbox" id="showBorders"><label for="showBorders">Country borders</label></div>
       <div style="position:relative;margin-top:8px;">
         <button type="button" id="bgColorBtn" class="small-btn bgColorBtn">
           <span id="bgColorSwatch" class="bgColorSwatch" style="background:#ffffff;"></span>Background
@@ -1024,6 +1055,7 @@
           </div>
         </div>
         <button id="sizeBtn" type="button" aria-label="Label size: Normal (click to change)" title="Label size: Normal (click to change)">Aa</button>
+        <button id="bordersBtn" type="button" aria-pressed="false" aria-label="Country borders: off (click to show)" title="Country borders: off (click to show)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 7.2 9.6 4.4l4.6 1.6 5.2 2.2-1 5.4-3.7 4.4-5.3.7-4.3-3.4z"/><path d="M9.6 4.4 10.9 10l-6.4 3.1M10.9 10l3.3-4M10.9 10l4.6 6.9M15.5 16.9l3.2-3.6" stroke-width="1.4"/></svg></button>
         <button id="bandBtn" type="button" aria-pressed="false" aria-label="Contour bands: off (click to turn on)" title="Contour bands: off (click to turn on)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5C4 7.5 8 4.5 12.5 5C17.5 5.5 20.5 8.5 19.5 13C18.5 17.5 14.5 19.8 10.5 19C6.5 18.2 4.8 15.2 4.5 11.5Z"/><path d="M7 11.5C6.8 9.5 9 7.8 12 8.2C15 8.5 16.8 10.5 16.2 13C15.6 15.5 13.2 16.8 10.8 16.4C8.6 16 7.2 13.8 7 11.5Z"/><path d="M9.6 11.6C9.6 10.5 10.8 9.9 12.2 10.3C13.6 10.7 14.2 11.8 13.7 12.9C13.2 13.9 11.8 14.3 10.8 13.8C9.9 13.4 9.6 12.5 9.6 11.6Z"/><path d="M11.4 11.8C11.5 11.3 12.2 11.2 12.4 11.7C12.6 12.2 12.1 12.6 11.7 12.5C11.4 12.4 11.3 12.1 11.4 11.8Z"/></svg></button>
         <button id="sbBtn" type="button" aria-pressed="true" aria-label="Show or hide settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2.2"/><circle cx="8" cy="17" r="2.2"/></svg><span>Settings</span></button>
         </div>
@@ -1760,6 +1792,7 @@ const showDots=$("showDots"), showLabels=$("showLabels"), allLabels=$("allLabels
 const showTitle=$("showTitle"), sizeSelect=$("sizeSelect");
 const showRelief=$("showRelief");
 const showWater=$("showWater");
+const showBorders=$("showBorders");
 // World opens with Mini labels/dots by default (it packs the whole planet); other regions use Normal. Once the user picks a size themselves, we stop overriding it.
 let sizeTouched=false, sizeApplyingDefault=false;
 // Default "Label & dot size" per region (option values: 0.36 Mini, 0.55 Tiny, 0.69 Extra small, 0.81 Small, 0.92 Normal).
@@ -2213,6 +2246,7 @@ async function requestPremium(r, push){
 const LAND_HI_EMBED=null;
 const LAND_HI_SKIP={macaronesia:1};   // hand-scaled island quadrants: keep its own shapes
 function loadHiLand(r){
+  if(r && LAND_HI_SKIP[r.id]) r.hiLandDone=true;
   if(!r || r.hiLand || r.hiLandState || LAND_HI_SKIP[r.id]) return;
   r.hiLandState=1;
   const apply=txt=>{
@@ -2220,10 +2254,11 @@ function loadHiLand(r){
       const rings=decodeRings(txt);
       if(rings.length){ r.landRings=rings; r.hiLand=true; }
     }catch(e){}
-    if(state.region===r){ heatEpoch++; heatCache=null; heatBg=null; requestRender(false); }
+    r.hiLandDone=true;
+    if(state.region===r && !r.__gateOpening){ heatEpoch++; heatCache=null; heatBg=null; requestRender(false); }
   };
-  if(LAND_HI_EMBED){ if(LAND_HI_EMBED[r.id]) apply(LAND_HI_EMBED[r.id]); return; }
-  fetch("land_hi/"+r.id+".txt").then(x=>x.ok?x.text():Promise.reject()).then(apply).catch(()=>{ r.hiLandState=0; });
+  if(LAND_HI_EMBED){ if(LAND_HI_EMBED[r.id]) apply(LAND_HI_EMBED[r.id]); else r.hiLandDone=true; return; }
+  fetch("land_hi/"+r.id+".txt").then(x=>x.ok?x.text():Promise.reject()).then(apply).catch(()=>{ r.hiLandState=0; r.hiLandDone=true; });
 }
 function openRegion(r, push){
   if(r.premium && !r.loaded){ requestPremium(r, push); return; }
@@ -2255,9 +2290,48 @@ function openRegion(r, push){
   resetView();
   refreshDatasetNote();
   markClean();
-  requestRender(false);
+  openRegionGated(r);
   if(push!==false) history.pushState({view:"studio", regionId:r.id}, "");
 }
+// Don't paint the bare map first and the coast/relief/rivers a moment later: keep the canvas hidden until the
+// region's detail assets are in (max ~3 s), then draw once and fade in.
+function regionAssetsReady(r){
+  const reliefOn=!!(showRelief && showRelief.checked), waterOn=!!(showWater && showWater.checked);
+  if(reliefOn && RELIEF.state<2 && RELIEF.state!==3) return false;
+  if(waterOn && WATER.state<2) { if(WATER.state===3) return true; return false; }
+  if(showBorders && showBorders.checked && !BORDER_SKIP[r.id] && BORDERS.state<2 && BORDERS.state!==3) return false;
+  if(!r.hiLandDone && !r.hiLand) return false;
+  return true;
+}
+function openRegionGated(r){
+  const cvs=document.getElementById("mapCanvas");
+  if(reliefDone_kick(), regionAssetsReady(r)){ cvs.style.transition="none"; cvs.style.opacity=""; requestRender(false); return; }
+  r.__gateOpening=true;
+  cvs.style.transition="none"; cvs.style.opacity="0";
+  const t0=Date.now();
+  const tick=()=>{
+    if(state.region!==r){ r.__gateOpening=false; return; }
+    if(regionAssetsReady(r) || Date.now()-t0>3000){
+      r.__gateOpening=false;
+      heatEpoch++; heatCache=null; heatBg=null;
+      requestRender(false);
+      requestAnimationFrame(()=>{ cvs.style.transition="opacity .25s ease"; cvs.style.opacity=""; });
+      return;
+    }
+    setTimeout(tick,40);
+  };
+  tick();
+}
+function reliefDone_kick(){
+  if(showRelief && showRelief.checked) loadRelief();
+  if(showWater && showWater.checked) loadWater();
+  if(showBorders && showBorders.checked) loadBorders();
+}
+// Warm the big shared assets as soon as the page is idle so opening a region doesn't wait on them.
+(function(){
+  const go=()=>{ try{ loadRelief(); loadWater(); loadBorders(); }catch(e){} };
+  if(window.requestIdleCallback) requestIdleCallback(go,{timeout:2500}); else setTimeout(go,1200);
+})();
 
 function goHome(push){
   studio.classList.remove("on");
@@ -4327,6 +4401,86 @@ function drawWater(g,x0,y0,x1,y1,scale,ox,oy,m,fast){
   g.restore();
 }
 
+/* ======================= country borders ======================= */
+// Natural Earth 10m land boundary lines (public domain), baked by build_borders.py into borders.json (same flat delta
+// format as water.json). Drawn inside the land clip, after the heat, in the coastline's ink but a little lighter/thinner,
+// so they read as quiet strokes. Not drawn on the historical tabs (modern borders would be anachronistic there).
+const BORDERS_SRC="borders.json";
+const BORDERS={lines:null,state:0};
+const BORDER_SKIP={bronzeage:1,ironage:1,romanimperial:1};
+function borderNoise(x,y){
+  const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
+  const h=(i,j)=>{ let n=(i*374761393+j*668265263)|0; n=(n^(n>>>13))*1274126177|0; return ((n^(n>>>16))>>>0)/4294967295; };
+  const u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf);
+  const a0=h(xi,yi), b0=h(xi+1,yi), c0=h(xi,yi+1), d0=h(xi+1,yi+1);
+  return a0+(b0-a0)*u+(c0-a0)*v+(a0-b0-c0+d0)*u*v;
+}
+function loadBorders(){
+  if(BORDERS.state) return; BORDERS.state=1;
+  fetch(BORDERS_SRC).then(r=>r.json()).then(j=>{
+    BORDERS.lines=decodeWater(j); BORDERS.state=2;
+    if(state.hasResult) requestRender(false,true);
+  }).catch(()=>{ BORDERS.state=3; });
+}
+if(showBorders) showBorders.addEventListener("change", ()=>{ if(state.hasResult) requestRender(false); });
+{ const bb=$("bordersBtn");
+  const sync=()=>{ if(!bb||!showBorders) return; const on=showBorders.checked;
+    bb.setAttribute("aria-pressed", on?"true":"false");
+    const t="Country borders: "+(on?"on (click to hide)":"off (click to show)"); bb.title=t; bb.setAttribute("aria-label",t); };
+  if(bb && showBorders){ bb.addEventListener("click",()=>{ showBorders.checked=!showBorders.checked; showBorders.dispatchEvent(new Event("change")); sync(); }); sync(); } }
+function drawBorders(g,x0,y0,x1,y1,scale,ox,oy,m,fast,W,H){
+  if(!showBorders || !showBorders.checked) return;
+  if(state.region && BORDER_SKIP[state.region.id]) return;
+  if(!BORDERS.lines){ loadBorders(); return; }
+  const lonLo=x0, lonHi=x1, latHi=-y0, latLo=-y1;
+  let lwMult=1;
+  if(state.region && state.region.id==="world"){
+    const bb=regionBox();
+    const fit=Math.min(W/(bb.x1-bb.x0), H/(bb.y1-bb.y0));
+    const k=Math.max(1, scale/fit);
+    lwMult=Math.min(1, 0.4+0.6*Math.log2(k)/3);
+  }
+  const expFine = 1;   // same weight relative to the map in the PNG as on screen (the coast's thinner export setting does not apply to borders)
+  g.save();
+  g.lineJoin="round"; g.lineCap="round";
+  const bw=(state.region && state.region.id==="world" ? Math.max(0.26*m,0.5*m*lwMult) : 0.5*m)*expFine;
+  // organic, slightly electric look: every border is densified and nudged by smooth noise tied to the GEOGRAPHIC position
+  // (so the wobble stays put while panning), two scales -- a slow wander plus a quicker jitter -- in screen pixels.
+  const AMP=2.0*m*(state.region && state.region.id==="world" ? Math.max(0.5,lwMult) : 1)*expFine;
+  const nz=borderNoise;
+  g.beginPath();
+  for(const R of BORDERS.lines){
+    if(R.x1<lonLo||R.x0>lonHi) continue;
+    if(PROJ!=="merc" && (R.y1<latLo||R.y0>latHi)) continue;
+    if((R.x1-R.x0)*scale<3 && (R.y1-R.y0)*scale<3) continue;
+    let lx=0, ly=0, llo=0, lla=0, first=true;
+    for(let q=0;q<R.n;q++){
+      const lo=R.lon[q], la=R.lat[q];
+      const px=lo*scale+ox, py=worldY(la)*scale+oy;
+      if(!first && q<R.n-1 && Math.abs(px-lx)+Math.abs(py-ly)<1.2) continue;
+      if(first){
+        const dx=(nz(lo*1.7,la*1.7)-0.5)*2*AMP, dy=(nz(lo*1.7+31.4,la*1.7+17.2)-0.5)*2*AMP;
+        g.moveTo(px+dx,py+dy); first=false;
+      } else {
+        const dist=Math.hypot(px-lx,py-ly), steps=Math.min(48,Math.max(1,Math.ceil(dist/3)));
+        for(let s=1;s<=steps;s++){
+          const t=s/steps, ex=(lx+(px-lx)*t), ey=(ly+(py-ly)*t);
+          const gl=lo+(llo-lo)*(1-t), gb=la+(lla-la)*(1-t);
+          const dx=((nz(gl*1.7,gb*1.7)-0.5)*1.6+(nz(gl*7.3+9.1,gb*7.3)-0.5)*0.9)*AMP;
+          const dy=((nz(gl*1.7+31.4,gb*1.7+17.2)-0.5)*1.6+(nz(gl*7.3,gb*7.3+5.7)-0.5)*0.9)*AMP;
+          g.lineTo(ex+dx,ey+dy);
+        }
+      }
+      lx=px; ly=py; llo=lo; lla=la;
+    }
+  }
+  // soft look: a wide faint halo, a middle one and a thin core, so the line fades at its edges instead of reading as a hard stroke
+  g.lineWidth=bw*3.2; g.strokeStyle="rgba(12,18,32,0.07)"; g.stroke();
+  g.lineWidth=bw*1.9; g.strokeStyle="rgba(12,18,32,0.10)"; g.stroke();
+  g.lineWidth=bw;     g.strokeStyle="rgba(12,18,32,0.20)"; g.stroke();
+  g.restore();
+}
+
 /* ======================= render ======================= */
 let renderQueued=false;
 // Fast-gesture cache: while the user drags/zooms, the already-computed heat image of the last
@@ -4965,6 +5119,7 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
     g.drawImage(heat, hx0, hy0, hw, hh);
     drawRelief(g,x0,y0,x1,y1,scale,ox,oy,H,m,fast);
     drawWater(g,x0,y0,x1,y1,scale,ox,oy,m,fast);
+    drawBorders(g,x0,y0,x1,y1,scale,ox,oy,m,fast,W,H);
     let bandLabels=null;
     if(bandField) bandLabels=drawContourLines(g,bandField,W,H,m,land);
     g.restore();
