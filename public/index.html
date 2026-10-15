@@ -5301,6 +5301,18 @@ function render(fast){
   }
 }
 
+// Coarse heat backdrop of a 5x5-viewport area around the current view (same capture the delayed timer in render() makes).
+function ensureHeatBg(W,H,m,key){
+  try{
+    const worldMult=(state.region.id==="world")?10:1, closestMult=(S.mode==="closest")?3:1;
+    heatCapture={out:null};
+    const sc=document.createElement("canvas"); sc.width=sc.height=1;
+    drawScene(sc.getContext("2d"), W*5, H*5, view.scale, 12e6*worldMult*closestMult*3, m, 8, true);
+    const o=heatCapture.out; heatCapture=null;
+    if(o) heatBg={key, canvas:o.canvas, wx:o.wx, wy:o.wy, ww:o.ww, wh:o.wh};
+  }catch(e){ heatCapture=null; }
+}
+
 // Which grid cells can possibly show up in the final image: the heat is clipped to
 // `land`, so only cells on land, or within a few cells of it (the bilinear stretch
 // blends a coast pixel with its neighbours), need an IDW value. Everything else
@@ -5593,6 +5605,16 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
     const hSig=view.cx+","+view.cy+","+scale+","+W+","+H;
     if((fast || (reuseHeatOnce && heatCache && heatCache.sig===hSig)) && !heatCapture && heatCache && heatCache.key===hKey){
       const c=heatCache; heat=c.canvas; hx0=c.wx*scale+ox; hy0=c.wy*scale+oy; hw=c.ww*scale; hh=c.wh*scale; usedCache=true;
+    }
+    if(usedCache && fast && !reuseHeatOnce){
+      // Gesture frame: the cached settled image only covers the viewport it was computed for, and the wide coarse
+      // backdrop (heatBg) only exists once its delayed capture ran and only spans ~5 viewports. After a quick zoom
+      // out (or a long pan) neither covers the view, which left the map edges blank until the settled redraw.
+      // If neither covers it, build the backdrop around the CURRENT view right now (coarse, one-off) so the edges
+      // always show colour.
+      const cov=(x,y,w,h)=> x<=1 && y<=1 && x+w>=W-1 && y+h>=H-1;
+      const bgOk=()=> heatBg && heatBg.key===hKey && cov(heatBg.wx*scale+ox, heatBg.wy*scale+oy, heatBg.ww*scale, heatBg.wh*scale);
+      if(!cov(hx0,hy0,hw,hh) && !bgOk()) ensureHeatBg(W,H,m,hKey);
     }
     if(!usedCache){
       // Grid sized to the CURRENT exact viewport every time — the only way to
