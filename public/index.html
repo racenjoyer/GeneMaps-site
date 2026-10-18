@@ -922,6 +922,7 @@ setTimeout(go,1500);})();</script>
       </select>
       <label class="small">Coverage radius (°)</label>
       <input type="number" id="reachDeg" value="3" step="0.5" min="0.5">
+      <div class="checkrow" id="softBlendRow" style="display:none"><input type="checkbox" id="closestSoftToggle"><label for="closestSoftToggle" title="Where two groups are almost equally close, mix their colours instead of picking one">Soft colour blend</label></div>
       <div class="checkrow" style="display:none"><input type="checkbox" id="bandMode"><label for="bandMode">Contour bands</label></div>
     </fieldset>
 
@@ -1300,6 +1301,9 @@ function isDiaspora(n){ return DIASPORA_RE.test(n) || OUTLIER_NAMES.has(n); }
 // from the dataset outright — see EXCLUDED_POPS in build_regions4.py — along
 // with a handful of other low-n Caribbean "Ethnicity-Nationality" combos.)
 const MAP_HIDDEN_NAMES = new Set([
+  // Samaritan: kept in the distance list (it is a real close neighbour of Levantine samples) but never drawn or shaded on the map,
+  // and not dropped by the "exclude diaspora" filter.
+  "Samaritan",
   "Anglo-Canadian_Northwest_Territories", "Cuban_Blanco", "Cuban_Mestizo", "Cuban_Mestizo_(Highly_SSA-Mixed)",
   "Cuban_Mulato", "Venezuelan_Blanco",
   // Afro-Yemeni samples sit at essentially the same coordinates as the
@@ -2910,6 +2914,14 @@ const closestLegendMapToggle = $("closestLegendMapToggle");
 // already tells you what's what while you're working, so the on-map version
 // is an opt-in for anyone who wants that key baked into the exported PNG too.
 let closestLegendOnMap = false;
+// Off by default: every pixel takes (almost) purely one target's colour. On = the older soft blend where two targets
+// are nearly equally close (wide band, mixed in-between colours).
+const closestSoftToggle = $("closestSoftToggle");
+let closestSoft = false;
+if(closestSoftToggle) closestSoftToggle.addEventListener("change", ()=>{
+  closestSoft = closestSoftToggle.checked;
+  if(state.hasResult) requestRender(false);
+});
 if(closestLegendMapToggle) closestLegendMapToggle.addEventListener("change", ()=>{
   closestLegendOnMap = closestLegendMapToggle.checked;
   if(state.hasResult) requestRender(false);
@@ -3039,6 +3051,7 @@ function applyModeUI(){
   // unless the new toggle below turns it on.
   if(legendMenuHeat) legendMenuHeat.style.display = closest ? "none" : "";
   if(legendMenuClosest) legendMenuClosest.style.display = closest ? "" : "none";
+  { const sbRow=$("softBlendRow"); if(sbRow) sbRow.style.display = closest ? "" : "none"; }
   renderClosestLegend();
 }
 mapModeSelect.addEventListener("change", ()=>{ applyModeUI(); parseTargetNow(); });
@@ -3204,7 +3217,7 @@ function computeDistances(){
     const add=(list,own)=>{
       for(let k=0;k<list.length;k++){
         const i=list[k], name=POP_NAMES[i];
-        if(S.excludeDiaspora && isDiaspora(name)){ if(own) excluded++; continue; }
+        if(S.excludeDiaspora && isDiaspora(name) && name!=="Samaritan"){ if(own) excluded++; continue; }
         const c=POP_COORDS[i];
         const hidden=isMapHidden(name);
         // Map-hidden populations (self-identified race/colour subgroups, see
@@ -3228,6 +3241,30 @@ function computeDistances(){
       if(an.empty){ emptyAn.push(an); continue; }
       const src=POP_NAMES.indexOf(an.from); if(src<0) continue;
       pts.push({name:"~anchor", anchor:true, own:false, dist:td(POP_VEC[src]), vec:POP_VEC[src], lat:an.lat, lon:an.lon});
+    }
+    // Libya <-> Egypt gap (modern tabs): no samples in Cyrenaica / the Western Desert coast made the heat split into two
+    // unrelated blobs with a strange band between them. Invisible points on that land take the interpolated value of the
+    // nearest real samples on both sides, so the heat flows continuously across the gap.
+    if(["mena","westeurasian","world"].includes(state.region.id) && state.region.landRings){
+      const don=pts.filter(p=>p.own && !p.anchor && p.vec && p.lat>20 && p.lat<34 && p.lon>8 && p.lon<34);
+      if(don.some(p=>p.lon<22) && don.some(p=>p.lon>26)){
+        const rr=state.region;
+        const inL=(lon,lat)=>{ let ins=false; for(const g of rr.landRings){ if(lon<g.minX||lon>g.maxX||lat<g.minY||lat>g.maxY) continue; if(ptInRing(g.pts,lon,lat)){ if(g.hole) return false; ins=true; } } return ins; };
+        const G=0.95; let row=0;
+        for(let lat=30.2; lat<=33; lat+=G, row++){
+          for(let lon=18.5, col=0; lon<=29.5; lon+=G, col++){
+            const h=_eh(row*307+19,col*113+11), h2=_eh(row*97+23,col*71+5);
+            const lo=lon+(h-0.5)*G*0.8, la=lat+(h2-0.5)*G*0.8;
+            if(!inL(lo,la)) continue;
+            const kx=Math.max(0.2,Math.cos(la*DEG2RAD)); let near=false;
+            for(const p of pts){ if(!p.own) continue; const dx=(p.lon-lo)*kx, dy=p.lat-la; if(dx*dx+dy*dy<1.1*1.1){ near=true; break; } }
+            if(near) continue;
+            let best=null,bd=Infinity,ws=0,vs=0;
+            for(const p of don){ const dx=(p.lon-lo)*kx, dy=p.lat-la, d=dx*dx+dy*dy+0.25; const w=1/(d*d); ws+=w; vs+=w*p.dist; if(d<bd){bd=d;best=p;} }
+            pts.push({name:"~fill", anchor:true, ghost:true, own:false, dist:vs/ws, vec:best.vec, lat:la, lon:lo});
+          }
+        }
+      }
     }
     // "Empty ground" anchors carry no population: they take the value of the
     // farthest drawn sample, so they shape the heat as unsampled space.
@@ -3296,8 +3333,8 @@ function computeDistances(){
 
   if(PROJ==="merc") KX=1;
   else {
-    let s=0; for(const p of pts) s+=p.lat;
-    KX=Math.max(0.15, Math.cos((s/pts.length)*DEG2RAD));
+    let s=0, nn=0; for(const p of pts) if(!p.ghost){ s+=p.lat; nn++; }
+    KX=Math.max(0.15, Math.cos((s/nn)*DEG2RAD));
   }
 
   // Typical spacing between neighbouring samples. Smoothing and coverage are
@@ -3312,7 +3349,7 @@ function computeDistances(){
   // for World only — every regional map keeps the exact tuning above.
   state.fullAreaDeg = areaDeg;
   const worldBoost = isWorld ? 2.2 : 1;
-  state.spacing = Math.max(0.25, Math.sqrt(areaDeg/Math.max(1,pts.length))) * worldBoost;
+  state.spacing = Math.max(0.25, Math.sqrt(areaDeg/Math.max(1,pts.reduce((n,p)=>n+(p.ghost?0:1),0)))) * worldBoost;
 
   // Unless the user has dialled it in themselves, scale the coverage radius to
   // the sampling density too.
@@ -3530,6 +3567,49 @@ HEAT_ANCHORS.world=HEAT_ANCHORS.world.concat([[65.5,-38.0],[67.0,-34.5],[69.0,-2
 // and Hispaniola's heat does not drift out over the cays. No containment, only anchors.
 const BAHAMAS_EMPTY=[[21.9,-72.8],[22.4,-73.0],[22.4,-74.0],[22.75,-74.2],[24.05,-74.5],[23.2,-75.1],[24.3,-75.5],[23.55,-75.9],[25.1,-76.2],[25.05,-77.4],[24.4,-77.9],[26.4,-77.1],[26.6,-78.3],[21.8,-72.2],[21.3,-71.1]].map(p=>({empty:true,lat:p[0],lon:p[1]}));
 for(const r of ["world","northamerica","centroamerica"]) HEAT_ANCHORS[r]=(HEAT_ANCHORS[r]||[]).concat(BAHAMAS_EMPTY);
+// Northern / north-western Greenland: Ellesmere and Canadian heat leaked across Nares Strait onto the ice sheet when the
+// max distance is high. Invisible empty-ground points (no population, farthest value) fill the ice sheet north of the
+// real samples, so nothing leaks in and the island reads as one calm block.
+const GREENLAND_N_EMPTY=(function(){
+  const poly=[[-73,78],[-72,76.2],[-60,75.3],[-55,72],[-52,70.6],[-40,70.6],[-23,70.6],[-18,76],[-20,81],[-35,83.7],[-55,83.2],[-66,82],[-72,80]];
+  const inP=(x,y)=>{ let ins=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1]; if(((yi>y)!==(yj>y)) && (x<(xj-xi)*(y-yi)/(yj-yi)+xi)) ins=!ins; } return ins; };
+  const out=[]; let row=0;
+  for(let lat=71.5; lat<=83; lat+=2.2, row++){
+    for(let lon=-72, col=0; lon<=-20; lon+=3.4, col++){
+      const h=Math.sin(row*12.9898+col*78.233)*43758.5453, h2=Math.sin(row*39.346+col*11.135)*24634.6345;
+      const lo=lon+((h-Math.floor(h))-0.5)*2.2, la=lat+((h2-Math.floor(h2))-0.5)*1.4;
+      if(inP(lo,la)) out.push({empty:true,lat:la,lon:lo});
+    }
+  }
+  return out;
+})();
+for(const r of ["world","northamerica"]) HEAT_ANCHORS[r]=(HEAT_ANCHORS[r]||[]).concat(GREENLAND_N_EMPTY);
+// Canadian Arctic archipelago: one Inuit sample used to paint hundreds of km of uninhabited islands. Invisible
+// empty-ground points (farthest value) over the empty islands; real settlements are kept clear so heat stays there.
+const ARCTIC_CA_EMPTY=(function(){
+  const polys=[
+    // high arctic islands: Ellesmere, Axel Heiberg, Devon, Melville, Bathurst, Prince Patrick, Borden, Cornwallis...
+    [[-125,74.5],[-118,76.5],[-110,78.5],[-100,80.5],[-85,83],[-65,83],[-62,80.5],[-72,78],[-80,75.6],[-90,74.3],[-100,73.8],[-112,73.8]],
+    // northern Victoria / Banks / Prince of Wales / Somerset interior
+    [[-124,72.4],[-112,72.8],[-100,72.8],[-93,72.6],[-93,72.0],[-102,71.9],[-114,71.8],[-124,72.0]],
+    // northern Baffin interior and Foxe basin islands
+    [[-85,71.4],[-78,71.8],[-72,71.4],[-68,69.6],[-70,67.6],[-76,67.6],[-82,69.2]]
+  ];
+  const sett=[[74.7,-95.0],[76.4,-82.9],[72.7,-78.0],[73.0,-85.2],[72.0,-125.2],[69.1,-105.1],[72.0,-94.5],[68.8,-81.2],[67.8,-76.0],[66.5,-61.0],[63.7,-68.5]];
+  const inP=(poly,x,y)=>{ let ins=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1]; if(((yi>y)!==(yj>y)) && (x<(xj-xi)*(y-yi)/(yj-yi)+xi)) ins=!ins; } return ins; };
+  const out=[]; let row=0;
+  for(let lat=67.4; lat<=83.2; lat+=1.5, row++){
+    for(let lon=-126, col=0; lon<=-60; lon+=3.0, col++){
+      const h=Math.sin(row*12.9898+col*78.233)*43758.5453, h2=Math.sin(row*39.346+col*11.135)*24634.6345;
+      const lo=lon+((h-Math.floor(h))-0.5)*2.0, la=lat+((h2-Math.floor(h2))-0.5)*1.0;
+      if(!polys.some(p=>inP(p,lo,la))) continue;
+      if(sett.some(q=>Math.hypot(q[0]-la,(q[1]-lo)*Math.cos(la*Math.PI/180))<2.4)) continue;
+      out.push({empty:true,lat:la,lon:lo});
+    }
+  }
+  return out;
+})();
+for(const r of ["world","northamerica"]) HEAT_ANCHORS[r]=(HEAT_ANCHORS[r]||[]).concat(ARCTIC_CA_EMPTY);
 // South Marmara coast: Prokonnesos (Marmara island, 0.04 from Classical Greek) bled its heat onto the
 // mainland shore. ONE invisible Turkish_Balikesir ghost on that coast covers the leak.
 const MARMARA_GHOSTS=[{from:"Turkish_Balikesir",lat:40.33,lon:27.85}];
@@ -3970,7 +4050,7 @@ function clusterPoints(x0,y0,x1,y1,cellIn){
    Africa and everything else are two separate heat groups: a pixel only blends the
    samples on its own side. The line follows the Mediterranean, Suez and the Red Sea. */
 const AFR_POLY = (function(){
-  const P=[[65,-45],[65,12.3],[43.0,12.3],[41.0,15.0],[39.0,18.0],[37.0,21.5],[35.0,25.5],[33.5,28.5],[32.9,30.0],[32.4,30.6],[32.4,34.0],[13,34],[13,37.45],[5,37.45],[1.5,36.9],[-2.5,36.0],[-5.5,35.96],[-30,35.96],[-30,-45]];
+  const P=[[65,-45],[65,12.3],[44.0,12.3],[43.32,12.62],[43.0,13.0],[42.0,14.5],[40.7,17.0],[39.5,19.8],[38.4,22.0],[36.6,24.4],[35.0,25.5],[33.5,28.5],[32.9,30.0],[32.4,30.6],[32.4,34.0],[13,34],[13,37.45],[5,37.45],[1.5,36.9],[-2.5,36.0],[-5.5,35.96],[-30,35.96],[-30,-45]];
   const f=new Float64Array(P.length*2); P.forEach((p,i)=>{f[i*2]=p[0]; f[i*2+1]=p[1];}); return f;
 })();
 // Canary Islands are their own heat group (side 2): their colour must not run
@@ -4015,6 +4095,36 @@ function buildFieldWorld(cl,gw,gh,x0,y0,dxw,dyw,mask,multi){
     const g={src,id:sd,gx0:b[0],gx1:b[1],gy0:b[2],gy1:b[3]};
     if(multi){ g.outs=outs; buildFieldMulti(sub,gw,gh,x0,y0,dxw,dyw,null,g); }
     else { g.out=outs[0]; buildField(sub,gw,gh,x0,y0,dxw,dyw,null,g); }
+  }
+  // Suez land bridge: Africa and Asia are separate heat groups, which showed as a hard seam across Sinai/Egypt.
+  // Around the seam, pixels are also computed with ALL samples (no split) and cross-faded, so the heat flows
+  // naturally over the land bridge. Only land pixels within a narrow strip; the Mediterranean/Red Sea split stays.
+  { const SX0=30.6, SX1=35.6, SY0=27.4, SY1=31.9;
+    const seamLon=(lat)=> lat<=28.5?33.5 : lat<=30.0 ? 33.5+(lat-28.5)*(32.9-33.5)/1.5 : lat<=30.6 ? 32.9+(lat-30.0)*(32.4-32.9)/0.6 : 32.4;
+    const src9=new Int8Array(gw*gh).fill(-1), wgt=new Float32Array(gw*gh);
+    let gx0=gw,gx1=-1,gy0=gh,gy1=-1;
+    for(let gy=0;gy<gh;gy++){
+      const wy=y0+dyw*gy; const lat=PROJ==="merc"?(2*Math.atan(Math.exp(-wy*DEG2RAD))-Math.PI/2)/DEG2RAD:-wy;
+      if(lat<SY0||lat>SY1) continue;
+      for(let gx=0;gx<gw;gx++){
+        const lon=x0+dxw*gx; if(lon<SX0||lon>SX1) continue;
+        const i=gy*gw+gx; if(mask && !mask[i]) continue;
+        const d=Math.abs(lon-seamLon(lat)); const t=Math.min(1,Math.max(0,(d-0.35)/1.5)); let w=1-t*t*(3-2*t);
+        const e=Math.min(1,Math.max(0,Math.min(lat-SY0,SY1-lat)/0.6)); w*=e*e*(3-2*e);
+        if(w<=0.002) continue;
+        src9[i]=9; wgt[i]=w; if(gx<gx0)gx0=gx; if(gx>gx1)gx1=gx; if(gy<gy0)gy0=gy; if(gy>gy1)gy1=gy;
+      }
+    }
+    if(gx1>=0 && cl.n>0){
+      const m=cl.n;
+      const sub={px:cl.px,py:cl.py,pw:cl.pw,pr:cl.pr,pro:cl.pro,pex:cl.pex,n:m};
+      if(multi){ sub.pvFlat=cl.pvFlat; sub.K=K; } else { sub.pv=cl.pv; sub.pxb=cl.pxb; }
+      const g={src:src9,id:9,gx0,gx1,gy0,gy1};
+      if(multi){ const o9=[]; for(let k=0;k<K;k++) o9.push(new Float32Array(gw*gh).fill(state.maxDist)); g.outs=o9; buildFieldMulti(sub,gw,gh,x0,y0,dxw,dyw,null,g);
+        for(let k=0;k<K;k++) for(let gy=gy0;gy<=gy1;gy++) for(let gx=gx0;gx<=gx1;gx++){ const i=gy*gw+gx; if(src9[i]===9) outs[k][i]=outs[k][i]*(1-wgt[i])+o9[k][i]*wgt[i]; } }
+      else { const o9=new Float32Array(gw*gh).fill(state.maxDist); g.out=o9; buildField(sub,gw,gh,x0,y0,dxw,dyw,null,g);
+        for(let gy=gy0;gy<=gy1;gy++) for(let gx=gx0;gx<=gx1;gx++){ const i=gy*gw+gx; if(src9[i]===9) outs[0][i]=outs[0][i]*(1-wgt[i])+o9[i]*wgt[i]; } }
+    }
   }
   return multi?outs:outs[0];
 }
@@ -4107,7 +4217,7 @@ function buildField(cl,gw,gh,x0,y0,dxw,dyw,mask,grp){
   // spacing — that's what keeps each hotspot small and defined instead of
   // spreading its influence into neighbouring populations.
   const hFloor=state.spacing*0.15;
-  const h=Math.max(S.smooth*state.spacing, hFloor);
+  const h=Math.max(S.smooth*state.spacing, hFloor)*HEAT_HFAC;
   const h2=h*h;
   // Plain IDW is a weighted average, so far from every sample it converges on the
   // dataset mean — painting genuinely unsampled land a meaningless mid-scale
@@ -4636,7 +4746,7 @@ function buildFieldMulti(cl,gw,gh,x0,y0,dxw,dyw,mask,grp){
     for(let qi=0;qi<4;qi++) noFadeQ[qi]=(state.macQuadCount.get(qi)||0)<=1;
   }
   const hFloor=state.spacing*0.15;
-  const h=Math.max(S.smooth*state.spacing, hFloor);
+  const h=Math.max(S.smooth*state.spacing, hFloor)*HEAT_HFAC;
   const h2=h*h;
   const fade=true, vFar=state.maxDist;
   const reach2=S.reach*S.reach;
@@ -5199,8 +5309,13 @@ let renderQueued=false;
 // invalidates it; only the gesture-settle paths pass keep=true.
 let heatEpoch=0, heatCache=null, heatBg=null, heatCapture=null, bgTimer=null;
 function heatKey(){ return heatEpoch+"|"+(state.region&&state.region.id)+"|"+S.mode+"|"+state.points.length+"|"+(state.targetSamples?state.targetSamples.length:0); }
+// The settled (full-detail) redraw blocks the page for a moment (up to a second or more on heavy modes like Who's Closer),
+// so it starts a short beat after the LAST pan/zoom input instead of straight away: quick back-to-back gestures no longer
+// each trigger it, and any new gesture cancels the pending one. The final image is identical.
+let settleT=null;
+function scheduleSettle(ms){ clearTimeout(settleT); settleT=setTimeout(()=>{ settleT=null; requestRender(false,true); }, ms); }
 function requestRender(fast,keep){
-  if(fast){ clearTimeout(bgTimer); bgTimer=null; }
+  if(fast){ clearTimeout(bgTimer); bgTimer=null; clearTimeout(settleT); settleT=null; }
   if(!fast && !keep){ heatEpoch++; heatCache=null; heatBg=null; }
   // A settled (non-fast) request that arrives while a fast frame is already queued must not be
   // dropped: otherwise a pointerup / wheel-timeout in the same frame as the last move leaves the
@@ -5541,6 +5656,9 @@ function drawContourLabels(g,labels,m){
   return rects;
 }
 
+// World, far views: the kernel spacing grows with the view area (so sparse continents stay connected), which also oversmoothed dense
+// areas (Europe, USA, India) until they lost their fine structure. HEAT_HFAC shrinks only the softening part of the kernel there.
+let HEAT_HFAC=1;
 function drawScene(g,W,H,scale,budget,m,minStep,fast){
   if(!(state.region && state.region.id==="world") || reachTouched || !state.fullAreaDeg || !state.points.length)
     return drawSceneInner(g,W,H,scale,budget,m,minStep,fast);
@@ -5559,8 +5677,10 @@ function drawScene(g,W,H,scale,budget,m,minStep,fast){
   const oldSp=state.spacing, oldReach=S.reach;
   state.spacing=q;
   S.reach=Math.max(1.0, Math.min(13+17*frac, +(q*(2.2-0.5*frac)).toFixed(1)));
+  const hfm=0.6;
+  HEAT_HFAC=1-hfm*frac;
   try{ return drawSceneInner(g,W,H,scale,budget,m,minStep,fast); }
-  finally{ state.spacing=oldSp; S.reach=oldReach; }
+  finally{ state.spacing=oldSp; S.reach=oldReach; HEAT_HFAC=1; }
 }
 function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
   // Earlier this reprojected a cached raster from the start of the current
@@ -5632,7 +5752,10 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
       const worldSharp = !fast && state.region.id==="world";
       const stepFloor = (S.mode==="closest") ? 1 : (worldSharp ? 3 : 2);
       const step0=pickStep(W,H,state.points.length,budget,stepFloor);
-      const clStep = worldSharp ? 1 : step0;  // World settled: merge samples at 1px, not at the grid step, so close samples stay distinct
+      // World settled: refine at DEVICE-pixel resolution (up to 2x), not CSS pixels. On a hi-dpi screen the 1-CSS-px heat was stretched
+      // 2x and the fine structure (Alps, small patches) looked soft from far away. Skipped for very large canvases (exports).
+      const wss = (worldSharp && W*H<4.5e6) ? Math.max(1, Math.min(2, window.devicePixelRatio||1)) : 1;
+      const clStep = worldSharp ? 1/wss : step0;  // World settled: merge samples at 1px (device px on hi-dpi), not at the grid step, so close samples stay distinct
       const cl=clusterPoints(x0,y0,x1,y1,Math.max((x1-x0)/(W/clStep),(y1-y0)/(H/clStep)));
       const step=Math.max(Math.min(minStep,stepFloor), Math.min(step0, pickStep(W,H,cl.n,budget,stepFloor)));
 
@@ -5683,7 +5806,7 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
         // blend the two (or more) colours together, exactly like a soft
         // Voronoi boundary instead of a sharp one.
         const range=(state.maxDist-state.minDist)||1e-9;
-        const band=Math.max(range*0.06, 1e-9);
+        const band=Math.max(range*(closestSoft?0.06:0.004), 1e-9);   // narrow = every pixel (almost) purely one target's colour; the sliver only anti-aliases the edge. Soft option restores the old wide blend
         for(let i=0;i<n;i++){
           let bv=Infinity;
           for(let k=0;k<fields.length;k++){ const v=fields[k][i]; if(v<bv) bv=v; }
@@ -5710,7 +5833,7 @@ function drawSceneInner(g,W,H,scale,budget,m,minStep,fast){
             // field at 1px ONLY near edges (where the coarse field changes quickly), and unsharp-mask
             // the result. Flat interiors keep the cheap value; edges get full 1px detail. Overshoot is
             // clamped to the legend range, so flat areas keep their exact colour.
-            const gw1=Math.max(2,Math.ceil(W)+1), gh1=Math.max(2,Math.ceil(H)+1);
+            const gw1=Math.max(2,Math.ceil(W*wss)+1), gh1=Math.max(2,Math.ceil(H*wss)+1);
             const dx1=(x1-x0)/(gw1-1), dy1=(y1-y0)/(gh1-1);
             const lo=state.minDist, hi=state.maxDist, amt=2.2;
             const f1=new Float32Array(gw1*gh1);
@@ -6325,7 +6448,7 @@ function endDrag(e){
   if(!dragging) return;
   dragging=false;
   canvas.classList.remove("dragging");
-  if(moved) requestRender(false,true);
+  if(moved) scheduleSettle(220);
 }
 canvas.addEventListener("pointerup",endDrag);
 canvas.addEventListener("pointercancel",endDrag);
@@ -6345,7 +6468,7 @@ canvas.addEventListener("wheel", e=>{
   view.cy=wy-(my-s.h/2)/view.scale;
   requestRender(true);
   clearTimeout(wheelTimer);
-  wheelTimer=setTimeout(()=>requestRender(false,true),110);
+  scheduleSettle(200);
 },{passive:false});
 
 zoomInBtn.addEventListener("click", ()=>{ view.scale*=1.25; requestRender(false); });
