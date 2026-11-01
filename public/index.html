@@ -3711,6 +3711,15 @@ const ARABIA_EDGE_GHOSTS=[
   {from:"Bedouin_Saudi_Arabia",lat:29.8,lon:45.6}
 ];
 for(const r of ["world","westeurasian","mena"]) HEAT_ANCHORS[r]=(HEAT_ANCHORS[r]||[]).concat(ARABIA_EDGE_GHOSTS);
+// Hokkaido has no samples of its own, so heat from the Sakhalin / Far East Russian samples spilled across the strait and
+// painted it as if it were Russian. Its population is Japanese (with the Ainu minority): invisible clones of the
+// Japanese sample sit on the island so it reads as Japanese distance.
+const HOKKAIDO_GHOSTS=[
+  {from:"Japanese",lat:43.06,lon:141.35},{from:"Japanese",lat:43.77,lon:142.37},{from:"Japanese",lat:42.92,lon:143.2},
+  {from:"Japanese",lat:42.98,lon:144.38},{from:"Japanese",lat:43.9,lon:144.27},{from:"Japanese",lat:41.77,lon:140.73},
+  {from:"Japanese",lat:42.63,lon:141.6},{from:"Japanese",lat:44.35,lon:142.46},{from:"Japanese",lat:43.4,lon:145.1}
+];
+for(const r of ["world","easteurasian","eastasia","siberia"]) HEAT_ANCHORS[r]=(HEAT_ANCHORS[r]||[]).concat(HOKKAIDO_GHOSTS);
 
 // One single heat body per sample, but a few samples get a heavier weight so
 // their own mass reaches its whole territory (Portugal down to the Algarve,
