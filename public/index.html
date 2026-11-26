@@ -4528,7 +4528,7 @@ function* buildFieldGen(cl,gw,gh,x0,y0,dxw,dyw,mask,grp){
   // that boundary — visible as a blocky, checkerboarded heat field whenever
   // Locality was set to Broad or Balanced. Widening the search radius for
   // slower-decaying powers fixes that without slowing "Tight" down at all.
-  const bucketRingR = power<=2 ? 5 : power===3 ? 3 : power===4 ? 2 : 1;
+  const bucketRingR = (power<=2 ? 5 : power===3 ? 3 : power===4 ? 2 : 1)+2;
   if(useBuckets){
     const cutoff=Math.max(h*10, S.reach*2, 1e-6);
     bcell=cutoff;
@@ -5033,7 +5033,7 @@ function buildFieldMulti(cl,gw,gh,x0,y0,dxw,dyw,mask,grp){
   // correct as before.
   let anyConfine=false;
   for(let i=0;i<n;i++) if(pr[i]){ anyConfine=true; break; }
-  const bucketRingR = power<=2 ? 5 : power===3 ? 3 : power===4 ? 2 : 1;
+  const bucketRingR = (power<=2 ? 5 : power===3 ? 3 : power===4 ? 2 : 1)+2;
   if(useBuckets){
     const cutoff=Math.max(h*10, S.reach*2, 1e-6);
     bcell=cutoff;
